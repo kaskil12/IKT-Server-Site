@@ -38,9 +38,9 @@ export default function Graph() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-16">
+    <div className="flex flex-col items-center justify-center">
       <h1 className="text-3xl text-black">Graph</h1>
-      <div style={{ width: '80%', height: '400px' }}>
+      <div style={{ width: '45%', height: '300px' }}>
         <Line data={chartData} />
       </div>
     </div>
