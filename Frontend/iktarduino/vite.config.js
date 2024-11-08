@@ -10,6 +10,6 @@ export default defineConfig({
     },
   })],
   build: {
-    outDir: 'dist', // Change 'dist' to your desired output directory
+    outDir: '../../..', // Change 'dist' to your desired output directory
   },
 });
