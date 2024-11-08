@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
-import singleFile from 'vite-plugin-singlefile';
+import * as singleFile from 'vite-plugin-singlefile';
 
 export default defineConfig({
-  plugins: [singleFile()],
+  plugins: [singleFile.default()],
 });
