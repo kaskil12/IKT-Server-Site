@@ -22,7 +22,6 @@ export default function Graph() {
     fetchData();
   }, []);
 
-
   const chartData = {
     labels: data.map(item => item.dato), 
     datasets: [
@@ -38,9 +37,9 @@ export default function Graph() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <h1 className="text-3xl text-black">Graph</h1>
-      <div style={{ width: '45%', height: '300px' }}>
+    <div className="flex flex-col items-center justify-center mt-8">
+      <h1 className="text-4xl font-bold text-gray-800 mb-6">Data Overview</h1>
+      <div className="w-full md:w-2/3 lg:w-1/2 p-4 bg-white rounded shadow-md">
         <Line data={chartData} />
       </div>
     </div>

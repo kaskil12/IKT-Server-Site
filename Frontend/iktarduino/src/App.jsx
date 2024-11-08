@@ -32,7 +32,6 @@ function App() {
     setDate(currentDate);
   };
 
-
   useEffect(() => {
     if (date) {
       handleSubmit(new Event('submit')); 
@@ -40,20 +39,22 @@ function App() {
   }, [date]); 
 
   return (
-    <>
+    <div className="bg-gray-100 min-h-screen">
       <IKTHEADER />
-      <Graph />
-      
-      <div className="form-container">
-        <h2 className="text-xl mb-4">Add Data</h2>
-        <button 
-          onClick={handleButtonClick} 
-          className="mt-2 p-2 bg-blue-500 text-white rounded"
-        >
-          Add Data
-        </button>
+      <div className="container mx-auto p-6">
+        <Graph />
+
+        <div className="form-container mt-8 flex flex-col items-center bg-white p-6 rounded shadow-md">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">Add Data</h2>
+          <button 
+            onClick={handleButtonClick} 
+            className="mt-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl"
+          >
+            Add Data
+          </button>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 
