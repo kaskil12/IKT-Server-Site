@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
-import * as singleFile from 'vite-plugin-singlefile';
+import htmlInline from 'vite-plugin-html-inline';
 
 export default defineConfig({
-  plugins: [singleFile.default()],
+  plugins: [htmlInline()],
 });
