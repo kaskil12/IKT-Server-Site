@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import htmlInline from 'vite-plugin-html-inline';
+import path from 'path';
 
 export default defineConfig({
   plugins: [htmlInline({
@@ -10,6 +11,6 @@ export default defineConfig({
     },
   })],
   build: {
-    outDir: '../../../Build', // Change 'dist' to your desired output directory
+    outDir: path.resolve(__dirname, 'build'),  // Adjust the path as needed
   },
 });
