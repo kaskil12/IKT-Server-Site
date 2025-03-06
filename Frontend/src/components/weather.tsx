@@ -75,7 +75,7 @@ export function Weather() {
   };
 
   return (
-    <Card className={`w-full max-w-md mx-auto bg-gradient-to-r ${getColorClass(color)} ${TextColor(color)} p-4 rounded-2xl shadow-xl`}>
+    <Card className={`w-full max-w-md mx-auto bg-gradient-to-r ${getColorClass(color)} ${TextColor(color)} p-4 rounded-2xl shadow-xl outline outline-blue-950`}>
       <CardHeader>
         <CardTitle className="text-center text-2xl font-semibold">
           Været i Elverum

@@ -4,7 +4,7 @@ function Home() {
 
   return (
     <>
-      <h1 className="text-4xl font-bold text-center">Home Page</h1>
+      <h1 className="text-4xl font-bold text-center p-4">IKT Elverum videregående skole</h1>
       <Weather />
     </>
   )

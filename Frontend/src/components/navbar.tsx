@@ -4,6 +4,8 @@ import * as React from "react"
 import { Link, Route, Routes } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import logo from './icons/logo.png'
+import { MdOutlineAccountCircle } from "react-icons/md";
+import { CiChat1 } from "react-icons/ci";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -87,11 +89,7 @@ export function NavigationMenuDemo() {
                     </NavigationMenuItem>
 
                     {/* Simple Links */}
-                    <NavigationMenuItem>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                            <Link to="/account">Account</Link>
-                        </NavigationMenuLink>
-                    </NavigationMenuItem>
+                    
                     <NavigationMenuItem>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                             <Link to="/about">About</Link>
@@ -99,8 +97,15 @@ export function NavigationMenuDemo() {
                     </NavigationMenuItem>
                     <NavigationMenuItem>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                            <Link to="/chat">Chat</Link>
+                            <Link to="/chat"><CiChat1 style={{ width: "24px", height: "24px" }}/></Link>
                         </NavigationMenuLink>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                        <Link to="/account">
+                        <MdOutlineAccountCircle style={{ width: "24px", height: "24px" }} />
+                        </Link>
+                    </NavigationMenuLink>
                     </NavigationMenuItem>
                 </NavigationMenuList>
             </NavigationMenu>

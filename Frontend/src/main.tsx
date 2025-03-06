@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { NavigationMenuDemo } from './components/navbar'
 import Dashboard from './Dashboard.tsx'
 import { ModeToggle } from './components/mode-toggle.tsx'
+import { Footer } from './components/Footer.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
+        <Footer />
       </BrowserRouter>
     </ThemeProvider>
   </StrictMode>,
