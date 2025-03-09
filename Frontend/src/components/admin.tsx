@@ -7,12 +7,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Define account type
 interface Account {
   id: number;
   name: string;
   password: string;
+  isAdmin: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -22,11 +24,13 @@ function AdminPanel() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  const [isUserAdmin, setIsUserAdmin] = useState<boolean>(false);
   
   // New account state
-  const [newAccount, setNewAccount] = useState<{name: string, password: string}>({
+  const [newAccount, setNewAccount] = useState<{name: string, password: string, isAdmin: boolean}>({
     name: "",
-    password: ""
+    password: "",
+    isAdmin: false
   });
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   
@@ -37,10 +41,57 @@ function AdminPanel() {
   // API base URL
   const API_BASE = "http://192.168.10.104:3001";
 
+  // Check if current user is admin
+  const checkAdminStatus = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login"; // Redirect to login if no token
+      return;
+    }
+    
+    fetch(`${API_BASE}/verifyToken`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Not authorized");
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (!data.user.isAdmin) {
+        // User is not admin, redirect to home
+        setNotification({
+          type: 'error',
+          message: 'You do not have permission to access the admin panel'
+        });
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 2000);
+      } else {
+        setIsUserAdmin(true);
+        fetchAccounts();
+      }
+    })
+    .catch(error => {
+      console.error("Auth error:", error);
+      // Redirect to login
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    });
+  };
+
   const fetchAccounts = () => {
     setLoading(true);
     setError(null);
-    fetch(`${API_BASE}/getAll`)
+    const token = localStorage.getItem("token");
+    fetch(`${API_BASE}/getAll`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    })
       .then((response) => {
         if (!response.ok) {
           console.error('Response status:', response.status);
@@ -61,12 +112,13 @@ function AdminPanel() {
 
   const handleAddAccount = () => {
     setLoading(true);
-    
+    const token = localStorage.getItem("token");
     fetch(`${API_BASE}/add`, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(newAccount),
     })
@@ -86,7 +138,7 @@ function AdminPanel() {
       });
       
       // Reset form and close dialog
-      setNewAccount({ name: "", password: "" });
+      setNewAccount({ name: "", password: "", isAdmin: false });
       setAddDialogOpen(false);
       
       // Refresh account list
@@ -106,16 +158,19 @@ function AdminPanel() {
     if (!editingAccount) return;
     
     setLoading(true);
+    const token = localStorage.getItem("token");
     
     fetch(`${API_BASE}/update/${editingAccount.id}`, {
       method: "PUT",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
         name: editingAccount.name,
-        password: editingAccount.password
+        password: editingAccount.password,
+        isAdmin: editingAccount.isAdmin
       }),
     })
     .then((response) => {
@@ -153,12 +208,14 @@ function AdminPanel() {
     }
     
     setLoading(true);
+    const token = localStorage.getItem("token");
     
     fetch(`${API_BASE}/delete/${id}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       }
     })
     .then((response) => {
@@ -198,9 +255,37 @@ function AdminPanel() {
   }, [notification]);
 
   useEffect(() => {
-    // Initial fetch
-    fetchAccounts();
+    // Check if user is admin
+    checkAdminStatus();
   }, []);
+
+  // Don't render anything until we've checked admin status
+  if (!isUserAdmin) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Admin Panel</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {notification && (
+              <Alert variant={notification.type === 'success' ? "default" : "destructive"}>
+                {notification.type === 'error' ? <AlertCircle className="h-4 w-4" /> : null}
+                <AlertTitle>{notification.type === 'success' ? "Success" : "Error"}</AlertTitle>
+                <AlertDescription>{notification.message}</AlertDescription>
+              </Alert>
+            )}
+            <div className="py-8 flex justify-center items-center">
+              <div className="flex flex-col items-center gap-2">
+                <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
+                <p className="text-sm text-gray-500">Checking permissions...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -261,6 +346,26 @@ function AdminPanel() {
                         className="col-span-3"
                       />
                     </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="isAdmin" className="text-right">
+                        Admin Access
+                      </Label>
+                      <div className="flex items-center space-x-2 col-span-3">
+                        <Checkbox 
+                          id="isAdmin" 
+                          checked={newAccount.isAdmin}
+                          onCheckedChange={(checked: boolean) => 
+                            setNewAccount({...newAccount, isAdmin: checked === true})
+                          }
+                        />
+                        <label
+                          htmlFor="isAdmin"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Grant admin privileges
+                        </label>
+                      </div>
+                    </div>
                   </div>
                   
                   <DialogFooter>
@@ -302,6 +407,7 @@ function AdminPanel() {
                 <TableRow>
                   <TableHead>ID</TableHead>
                   <TableHead>Username</TableHead>
+                  <TableHead>Admin</TableHead>
                   <TableHead>Created At</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -311,6 +417,7 @@ function AdminPanel() {
                   <TableRow key={account.id}>
                     <TableCell className="font-medium">{account.id}</TableCell>
                     <TableCell>{account.name}</TableCell>
+                    <TableCell>{account.isAdmin ? "Yes" : "No"}</TableCell>
                     <TableCell>{account.createdAt ? new Date(account.createdAt).toLocaleString() : 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <Dialog open={editDialogOpen && editingAccount?.id === account.id} 
@@ -360,6 +467,26 @@ function AdminPanel() {
                                   className="col-span-3"
                                   placeholder="Enter new password"
                                 />
+                              </div>
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="edit-isAdmin" className="text-right">
+                                  Admin Access
+                                </Label>
+                                <div className="flex items-center space-x-2 col-span-3">
+                                  <Checkbox 
+                                    id="edit-isAdmin" 
+                                    checked={editingAccount.isAdmin}
+                                    onCheckedChange={(checked: boolean) => 
+                                      setEditingAccount({...editingAccount, isAdmin: checked === true})
+                                    }
+                                  />
+                                  <label
+                                    htmlFor="edit-isAdmin"
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  >
+                                    Grant admin privileges
+                                  </label>
+                                </div>
                               </div>
                             </div>
                           )}

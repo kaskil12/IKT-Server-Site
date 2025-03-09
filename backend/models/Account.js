@@ -12,6 +12,10 @@ module.exports = class Account extends Model {
             password: {
                 type: DataTypes.STRING(255),
                 allowNull: false,
+            },
+            isAdmin: {
+                type: DataTypes.BOOLEAN,
+                default: false
             }
         }, {
             tableName: "Account",
