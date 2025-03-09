@@ -2,13 +2,14 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import Home from "./Home.tsx";
-import { ThemeProvider } from "./components/theme-provider";
+import { ThemeProvider } from "./components/ui/theme-provider.tsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { NavigationMenuDemo } from "./components/navbar";
 import Dashboard from "./Dashboard.tsx";
-import { ModeToggle } from "./components/mode-toggle.tsx";
+import { ModeToggle } from "./components/ui/mode-toggle.tsx";
 import { Footer } from "./components/Footer.tsx";
 import Chat from "./Chat.tsx";
+import AdminPanel from "@/components/admin.tsx"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -22,6 +23,7 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
         <Footer />
       </BrowserRouter>

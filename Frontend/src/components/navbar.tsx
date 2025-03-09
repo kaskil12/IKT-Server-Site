@@ -107,6 +107,13 @@ export function NavigationMenuDemo() {
                 />
               </Link>
             </NavigationMenuLink>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <Link to="/admin">
+              <MdOutlineAccountCircle
+                  style={{ width: "24px", height: "24px" }}
+                />
+              </Link>
+            </NavigationMenuLink>
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
