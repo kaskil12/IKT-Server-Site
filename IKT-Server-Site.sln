@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "snmpIKT", "snmpIKT", "{2FFC26BD-815F-5861-FE47-2EF9C0046663}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IKTPrinter", "snmpIKT\IKTPrinter\IKTPrinter.csproj", "{FDDB04CF-18EF-3930-3EAE-9854FAB303CF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDDB04CF-18EF-3930-3EAE-9854FAB303CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDDB04CF-18EF-3930-3EAE-9854FAB303CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDDB04CF-18EF-3930-3EAE-9854FAB303CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDDB04CF-18EF-3930-3EAE-9854FAB303CF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FDDB04CF-18EF-3930-3EAE-9854FAB303CF} = {2FFC26BD-815F-5861-FE47-2EF9C0046663}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8D84A945-2733-4134-9A16-535B69E8553A}
+	EndGlobalSection
+EndGlobal

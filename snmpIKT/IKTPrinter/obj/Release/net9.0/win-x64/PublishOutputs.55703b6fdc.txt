@@ -1,0 +1,2 @@
+C:\Users\kasper\OneDrive - Innlandet fylkeskommune\Dokumenter\GitHub\IKT-Server-Site\snmpIKT\IKTPrinter\bin\Release\net9.0\win-x64\publish\IKTPrinter.pdb
+C:\Users\kasper\OneDrive - Innlandet fylkeskommune\Dokumenter\GitHub\IKT-Server-Site\snmpIKT\IKTPrinter\bin\Release\net9.0\win-x64\publish\IKTPrinter.exe
