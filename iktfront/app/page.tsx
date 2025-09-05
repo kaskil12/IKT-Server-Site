@@ -52,12 +52,13 @@ export default function Home() {
         </Table>
       </div>
       <div className="w-3xl h-3xl flex-initial gap-6 p-12 flex flex-col">
-        <ChartLineLabel cardTitle="Nettverkstrafikk" cardDescription="Siste 30 dager" trendingText="+5% siden forrige måned" footerText="Oppetid 99.99%" chartData={[{ month: "January", desktop: 186 },
-          { month: "February", desktop: 305 },
-          { month: "March", desktop: 237 },
-          { month: "April", desktop: 73 },
-          { month: "May", desktop: 209 },
-          { month: "June", desktop: 214}]} />
+        <ChartLineLabel cardTitle="Nettverkstrafikk" cardDescription="Siste 30 dager" trendingText="+5% siden forrige måned" footerText="Oppetid 99.99%" 
+        chartData={[{ month: "January", antall: 186 },
+          { month: "February", antall: 305 },
+          { month: "March", antall: 237 },
+          { month: "April", antall: 73 },
+          { month: "May", antall: 209 },
+          { month: "June", antall: 214}]} />
         <DeviceBox
           devices={[
             { name: "Router #12", error: "Connection lost", location: "Server Room A" },

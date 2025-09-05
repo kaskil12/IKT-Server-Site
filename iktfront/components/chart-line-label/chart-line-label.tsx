@@ -21,17 +21,17 @@ import {
 export const description = "A line chart with a label"
 
 const defaultChartData = [
-    { month: "January", desktop: 186 },
-    { month: "February", desktop: 305 },
-    { month: "March", desktop: 237 },
-    { month: "April", desktop: 73 },
-    { month: "May", desktop: 209 },
-    { month: "June", desktop: 214 },
+    { month: "January", antall: 186 },
+    { month: "February", antall: 305 },
+    { month: "March", antall: 237 },
+    { month: "April", antall: 73 },
+    { month: "May", antall: 209 },
+    { month: "June", antall: 214 },
 ]
 
 const chartConfig = {
-    desktop: {
-        label: "Desktop",
+    antall: {
+        label: "Antall",
         color: "var(--chart-1)",
     },
     mobile: {
@@ -87,12 +87,12 @@ export function ChartLineLabel({
                             content={<ChartTooltipContent indicator="line" />}
                         />
                         <Line
-                            dataKey="desktop"
+                            dataKey="antall"
                             type="natural"
-                            stroke="var(--color-desktop)"
+                            stroke="var(--color-antall)"
                             strokeWidth={2}
                             dot={{
-                                fill: "var(--color-desktop)",
+                                fill: "var(--color-antall)",
                             }}
                             activeDot={{
                                 r: 6,
