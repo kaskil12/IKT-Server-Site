@@ -28,8 +28,8 @@ const tableData = [
 
 export default function Home() {
   return (
-    <div className="flex flex-row justify-center items-start">
-      <div className="w-5xl h-screen flex-initial items-center justify-center gap-6 p-12 text-white">
+    <div className="flex flex-row justify-center gap-0">
+      <div className="w-5xl h-screen flex-initial items-center justify-center gap-6 p-6 text-white">
         <Table>
           <TableHeader>
             <TableRow>
@@ -51,7 +51,7 @@ export default function Home() {
           </TableBody>
         </Table>
       </div>
-      <div className="w-3xl h-3xl flex-initial gap-6 p-12 flex flex-col">
+      <div className="w-3xl h-3xl flex-initial gap-6 p-6 flex flex-col">
         <ChartLineLabel cardTitle="Nettverkstrafikk" cardDescription="Siste 30 dager" trendingText="+5% siden forrige måned" footerText="Oppetid 99.99%" 
         chartData={[{ month: "January", antall: 186 },
           { month: "February", antall: 305 },
@@ -61,9 +61,9 @@ export default function Home() {
           { month: "June", antall: 214}]} />
         <DeviceBox
           devices={[
-            { name: "Router #12", error: "Connection lost", location: "Server Room A" },
-            { name: "Switch #5", error: "Overheating", location: "Rack B2" },
-            { name: "AP #7", error: "No power", location: "Hallway" },
+            { name: "Router #12", error: "Connection lost", location: "H211" },
+            { name: "Switch #5", error: "Overheating", location: "C Fløy" },
+            { name: "AP #7", error: "No power", location: "IKT" },
           ]}
         />
 

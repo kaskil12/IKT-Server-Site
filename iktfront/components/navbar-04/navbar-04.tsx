@@ -18,7 +18,7 @@ const Navbar04Page = () => {
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="hidden sm:inline-flex rounded-full"
+              className="hidden sm:inline-flex rounded-full cursor-pointer"
             >
               Sign In
             </Button>
