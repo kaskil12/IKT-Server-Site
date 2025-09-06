@@ -20,7 +20,7 @@ interface DeviceTableProps {
 
 export default function DeviceBox({ devices }: DeviceTableProps) {
   return (
-    <Table className="w-full max-w-3xl border rounded-2xl shadow-md text-white">
+    <Table className="w-full max-w-3xl rounded-2xl shadow-md text-white ">
       <TableCaption className="text-white">A list of monitored devices</TableCaption>
       <TableHeader>
         <TableRow>
