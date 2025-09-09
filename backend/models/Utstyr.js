@@ -15,7 +15,11 @@ module.exports = class Printer extends Model {
                 type: DataTypes.STRING,
                 defaultValue: "Tom"
             },
-            utlånt: {
+            feilkode: {
+                type: DataTypes.STRING,
+                defaultValue: "Tom"
+            },
+            online: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: false
             }
