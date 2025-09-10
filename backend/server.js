@@ -6,7 +6,14 @@ const port = 64;
 const sequelizeDB = require("./database.js");
 const Printer = require("./models/Printer.js");
 Printer.init(sequelizeDB);
-Printer.sync({ force: true });
+Printer.sync({ force: true }).then(() => {
+  updatePrintersStatus();
+  setInterval(updatePrintersStatus, 5 * 60 * 1000);
+
+  app.listen(port, () => {
+    console.log(`Express app listening at http://localhost:${port}`);
+  });
+});
 
 
 app.use(cors());
@@ -18,48 +25,49 @@ app.get('/getAll', async (req, res) => {
 
   res.send(await Printer.findAll())
 })
-app.get('/snmp-data', async (req, res) => {
-  const host = '10.230.144.43';
-  const community = 'public';
-  const oids = ["1.3.6.1.2.1.43.11.1.1.9.1.2"];
+const updatePrintersStatus = async () => {
+  const printers = await Printer.findAll();
+  for (const printer of printers) {
+    const oids = JSON.parse(printer.oids || '[]');
+    const ip = printer.PrinterIP;
+    if (!ip || !Array.isArray(oids) || oids.length === 0) continue;
 
-  const session = snmp.createSession(host, community);
-
-  try {
-    const varbinds = await new Promise((resolve, reject) => {
-      session.get(oids, (error, varbinds) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(varbinds);
-        }
-      });
+    const session = snmp.createSession(ip, "public");
+    session.get(oids, async (error, varbinds) => {
+      if (error) {
+        await Printer.update({ online: false }, { where: { id: printer.id } });
+      } else {
+        const oidValues = {};
+        varbinds.forEach(vb => {
+          oidValues[vb.oid] = vb.value;
+        });
+        await Printer.update({
+          online: true,
+          oids: JSON.stringify(oidValues)
+        }, { where: { id: printer.id } });
+      }
+      session.close();
     });
-
-    const snmpData = varbinds.map(vb => ({
-      oid: vb.oid,
-      value: vb.value.toString()
-    }));
-    res.json(snmpData);
-  } catch (error) {
-    console.error("SNMP Error:", error.message);
-    res.status(500).send("Error fetching SNMP data.");
-  } finally {
-    session.close();
   }
-});
-
-app.listen(port, () => {
-  console.log(`Express app listening at http://localhost:${port}`);
-});
+};
 
 app.post('/add', async (req, res) => {
-  Printer.create({
-    code: req.body.code,
-    item: req.body.item
-  });
-  res.send(await Printer.findOne({ where: { code: req.body.code, }, order: [['id', 'DESC']] }))
-})
+  const { modell, serienummer, PrinterIP, plassering, oids, feilkode, online } = req.body;
+  try {
+    const printer = await Printer.create({
+      modell,
+      serienummer,
+      PrinterIP,
+      plassering,
+      oids: JSON.stringify(oids),
+      feilkode,
+      online
+    });
+    res.send(printer);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
 
 // app.get('/loanOut/:id/:name', async (req, res) => {
 //   await Printer.update({ utlånt: true }, { where: { id: req.params.id } })

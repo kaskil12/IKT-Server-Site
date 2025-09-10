@@ -11,6 +11,10 @@ module.exports = class Printer extends Model {
                 type: DataTypes.STRING,
                 defaultValue: "Tom"
             },
+            PrinterIP: {
+                type: DataTypes.STRING,
+                defaultValue: "Tom"
+            },
             plassering: {
                 type: DataTypes.STRING,
                 defaultValue: "Tom"
@@ -18,7 +22,7 @@ module.exports = class Printer extends Model {
             oids: {
                 type: DataTypes.JSON,
                 defaultValue: {
-                    black: "1.3.6.1.2.1.43.11.1.1.9.1.2"
+                    navn: "oid"
                 }
             },
             feilkode: {
