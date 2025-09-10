@@ -15,6 +15,12 @@ module.exports = class Printer extends Model {
                 type: DataTypes.STRING,
                 defaultValue: "Tom"
             },
+            oids: {
+                type: DataTypes.JSON,
+                defaultValue: {
+                    black: "1.3.6.1.2.1.43.11.1.1.9.1.2"
+                }
+            },
             feilkode: {
                 type: DataTypes.STRING,
                 defaultValue: "Tom"
@@ -27,7 +33,6 @@ module.exports = class Printer extends Model {
             {
                 tableName: "Printer",
                 createdAt: false,
-                updatedAt: false,
                 sequelize
             })
     }
