@@ -1,6 +1,7 @@
 
 export default function Login() {
   return (
+    
     <div className="flex min-h-screen items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-8 border border-white/20">
