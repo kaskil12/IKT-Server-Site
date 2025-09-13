@@ -21,9 +21,7 @@ module.exports = class Printer extends Model {
             },
             oids: {
                 type: DataTypes.JSON,
-                defaultValue: {
-                    navn: "oid"
-                }
+                defaultValue: []
             },
             feilkode: {
                 type: DataTypes.STRING,

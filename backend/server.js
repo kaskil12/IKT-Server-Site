@@ -28,22 +28,29 @@ app.get('/getAll', async (req, res) => {
 const updatePrintersStatus = async () => {
   const printers = await Printer.findAll();
   for (const printer of printers) {
-    const oids = JSON.parse(printer.oids || '[]');
+    const oids = printer.oids || [];
     const ip = printer.PrinterIP;
     if (!ip || !Array.isArray(oids) || oids.length === 0) continue;
 
     const session = snmp.createSession(ip, "public");
-    session.get(oids, async (error, varbinds) => {
+    const oidNumbers = oids.map(oid => oid.oid);
+    
+    session.get(oidNumbers, async (error, varbinds) => {
       if (error) {
         await Printer.update({ online: false }, { where: { id: printer.id } });
       } else {
-        const oidValues = {};
-        varbinds.forEach(vb => {
-          oidValues[vb.oid] = vb.value;
+        const updatedOids = oids.map(oidObj => {
+          const varbind = varbinds.find(vb => vb.oid === oidObj.oid);
+          return {
+            name: oidObj.name,
+            oid: oidObj.oid,
+            value: varbind ? varbind.value : oidObj.value
+          };
         });
+        
         await Printer.update({
           online: true,
-          oids: JSON.stringify(oidValues)
+          oids: updatedOids
         }, { where: { id: printer.id } });
       }
       session.close();
@@ -54,12 +61,18 @@ const updatePrintersStatus = async () => {
 app.post('/add', async (req, res) => {
   const { modell, serienummer, PrinterIP, plassering, oids, feilkode, online } = req.body;
   try {
+    const formattedOids = oids.map(oid => ({
+      name: oid.name,
+      oid: oid.oid,
+      value: null
+    }));
+    
     const printer = await Printer.create({
       modell,
       serienummer,
       PrinterIP,
       plassering,
-      oids: JSON.stringify(oids),
+      oids: formattedOids,
       feilkode,
       online
     });
