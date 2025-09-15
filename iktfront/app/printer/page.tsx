@@ -25,6 +25,8 @@ export default function Printer() {
     const [printers, setPrinters] = useState<Printer[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [editId, setEditId] = useState<number | null>(null);
     const [form, setForm] = useState({
         model: "",
         serienumber: "",
@@ -74,7 +76,6 @@ export default function Printer() {
                     online: form.online
                 }),
             });
-            
             setOpen(false);
             setForm({
                 model: "",
@@ -85,12 +86,79 @@ export default function Printer() {
                 online: false,
                 oids: [{ name: "", oid: "" }],
             });
-            
-            // Refresh data after adding
+            setEditMode(false);
+            setEditId(null);
             fetchPrinters();
         } catch (error) {
             console.error("Failed to add printer:", error);
         }
+    };
+
+    const handleEditPrinter = async () => {
+        if (editId === null) return;
+        try {
+            await fetch("http://localhost:64/update", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: editId,
+                    modell: form.model,
+                    serienummer: form.serienumber,
+                    PrinterIP: form.ip,
+                    plassering: form.location,
+                    oids: form.oids,
+                    feilkode: form.error,
+                    online: form.online
+                }),
+            });
+            setOpen(false);
+            setForm({
+                model: "",
+                serienumber: "",
+                location: "",
+                ip: "",
+                error: "",
+                online: false,
+                oids: [{ name: "", oid: "" }],
+            });
+            setEditMode(false);
+            setEditId(null);
+            fetchPrinters();
+        } catch (error) {
+            console.error("Failed to edit printer:", error);
+        }
+    };
+
+    const handleDeletePrinter = async (id: number) => {
+        try {
+            await fetch("http://localhost:64/delete", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ id }),
+            });
+            fetchPrinters();
+        } catch (error) {
+            console.error("Failed to delete printer:", error);
+        }
+    };
+
+    const openEditModal = (printer: Printer) => {
+        setForm({
+            model: printer.modell,
+            serienumber: printer.serienummer,
+            location: printer.plassering,
+            ip: printer.PrinterIP,
+            error: printer.feilkode,
+            online: printer.online,
+            oids: printer.oids && printer.oids.length > 0 ? printer.oids.map(oid => ({ name: oid.name, oid: oid.oid })) : [{ name: "", oid: "" }],
+        });
+        setEditMode(true);
+        setEditId(printer.id);
+        setOpen(true);
     };
 
     return (
@@ -126,7 +194,10 @@ export default function Printer() {
                                     )}
                                 </div>
                             </div>
-                            
+                            <div className="flex gap-2 mb-4">
+                                <Button size="sm" onClick={() => openEditModal(printer)} className="bg-blue-600 hover:bg-blue-700">Edit</Button>
+                                <Button size="sm" variant="destructive" onClick={() => handleDeletePrinter(printer.id)}>Delete</Button>
+                            </div>
                             {printer.oids && printer.oids.length > 0 && (
                                 <div>
                                     <h4 className="text-lg font-semibold text-white mb-2">SNMP OIDs</h4>
@@ -162,10 +233,23 @@ export default function Printer() {
                     <div className="bg-white rounded-xl shadow-2xl w-[500px] p-8 border border-gray-200 relative max-h-[90vh] overflow-y-auto">
                         <button
                             className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl font-bold"
-                            onClick={() => setOpen(false)}
+                            onClick={() => {
+                                setOpen(false);
+                                setEditMode(false);
+                                setEditId(null);
+                                setForm({
+                                    model: "",
+                                    serienumber: "",
+                                    location: "",
+                                    ip: "",
+                                    error: "",
+                                    online: false,
+                                    oids: [{ name: "", oid: "" }],
+                                });
+                            }}
                             aria-label="Close"
                         >×</button>
-                        <h3 className="text-2xl font-bold mb-6 text-center text-gray-800">Add New Printer</h3>
+                        <h3 className="text-2xl font-bold mb-6 text-center text-gray-800">{editMode ? "Edit Printer" : "Add New Printer"}</h3>
                         <div className="space-y-4">
                             <input 
                                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-black" 
@@ -207,7 +291,6 @@ export default function Printer() {
                                 />
                                 <label htmlFor="online" className="text-gray-700">Is Online</label>
                             </div>
-                            
                             <div>
                                 <div className="font-semibold mb-2 text-gray-700">SNMP OIDs</div>
                                 {form.oids.map((oid, idx) => (
@@ -253,10 +336,22 @@ export default function Printer() {
                                     Add OID
                                 </Button>
                             </div>
-                            
                             <div className="flex justify-end gap-2 mt-6">
-                                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                                <Button onClick={handleAddPrinter}>Save Printer</Button>
+                                <Button variant="outline" onClick={() => {
+                                    setOpen(false);
+                                    setEditMode(false);
+                                    setEditId(null);
+                                    setForm({
+                                        model: "",
+                                        serienumber: "",
+                                        location: "",
+                                        ip: "",
+                                        error: "",
+                                        online: false,
+                                        oids: [{ name: "", oid: "" }],
+                                    });
+                                }}>Cancel</Button>
+                                <Button onClick={editMode ? handleEditPrinter : handleAddPrinter}>{editMode ? "Save Changes" : "Save Printer"}</Button>
                             </div>
                         </div>
                     </div>
