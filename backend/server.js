@@ -1,8 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const snmp = require('net-snmp');
+const http = require('http');
+const socketio = require('socket.io');
 const app = express();
 const port = 64;
+const server = http.createServer(app);
+const io = socketio(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
 const sequelizeDB = require("./database.js");
 const Printer = require("./models/Printer.js");
 Printer.init(sequelizeDB);
@@ -10,7 +19,7 @@ Printer.sync().then(() => {
   updatePrintersStatus();
   setInterval(updatePrintersStatus, 5 * 60 * 1000);
 
-  app.listen(port, () => {
+  server.listen(port, () => {
     console.log(`Express app listening at http://localhost:${port}`);
   });
 });
@@ -18,7 +27,14 @@ Printer.sync().then(() => {
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'))
+app.use(express.static('public'));
+
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
 
 
 app.get('/getAll', async (req, res) => {
@@ -65,6 +81,8 @@ const updatePrintersStatus = async () => {
 
     session.close();
   }
+  const allPrinters = await Printer.findAll();
+  io.emit('printersUpdated', allPrinters);
 };
 
 app.post('/add', async (req, res) => {

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import io from "socket.io-client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -52,11 +53,21 @@ export default function Printer() {
 
     useEffect(() => {
         fetchPrinters();
-        
+
         // Set up auto-refresh every 5 minutes
         const interval = setInterval(fetchPrinters, 5 * 60 * 1000);
-        
-        return () => clearInterval(interval);
+
+        // Set up socket.io connection for real-time updates
+        const socket = io("http://localhost:64");
+        socket.on("printersUpdated", (data: Printer[]) => {
+            setPrinters(data);
+            setLoading(false);
+        });
+
+        return () => {
+            clearInterval(interval);
+            socket.disconnect();
+        };
     }, []);
 
     const handleAddPrinter = async () => {
