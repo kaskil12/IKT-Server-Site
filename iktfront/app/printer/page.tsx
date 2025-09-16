@@ -54,10 +54,8 @@ export default function Printer() {
     useEffect(() => {
         fetchPrinters();
 
-        // Set up auto-refresh every 5 minutes
         const interval = setInterval(fetchPrinters, 5 * 60 * 1000);
 
-        // Set up socket.io connection for real-time updates
         const socket = io("http://localhost:64");
         socket.on("printersUpdated", (data: Printer[]) => {
             setPrinters(data);
@@ -221,15 +219,33 @@ export default function Printer() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {printer.oids.map((oid, idx) => (
-                                                <TableRow key={idx}>
-                                                    <TableCell className="text-white">{oid.name}</TableCell>
-                                                    <TableCell className="text-white">{oid.oid}</TableCell>
-                                                    <TableCell className="text-white">
-                                                        {oid.value !== null ? oid.value.toString() : 'No data'}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
+                                            {printer.oids.map((oid, idx) => {
+                                                let value = oid.value;
+                                                if (value && typeof value === 'object') {
+                                                    if (Array.isArray(value.data)) {
+                                                        try {
+                                                            value = Buffer.from(value.data).toString();
+                                                        } catch {
+                                                            value = '[unreadable octet string]';
+                                                        }
+                                                    } else if (value.type === 'Buffer' && Array.isArray(value.data)) {
+                                                        try {
+                                                            value = Buffer.from(value.data).toString();
+                                                        } catch {
+                                                            value = '[unreadable octet string]';
+                                                        }
+                                                    } else {
+                                                        value = String(value);
+                                                    }
+                                                }
+                                                return (
+                                                    <TableRow key={idx}>
+                                                        <TableCell className="text-white">{oid.name ?? ''}</TableCell>
+                                                        <TableCell className="text-white">{oid.oid ?? ''}</TableCell>
+                                                        <TableCell className="text-white">{value !== undefined && value !== null ? value : 'No data'}</TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
                                         </TableBody>
                                     </Table>
                                 </div>

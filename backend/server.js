@@ -17,7 +17,7 @@ const Printer = require("./models/Printer.js");
 Printer.init(sequelizeDB);
 Printer.sync().then(() => {
   updatePrintersStatus();
-  setInterval(updatePrintersStatus, 5 * 60 * 1000);
+  setInterval(updatePrintersStatus, 3 * 60 * 1000);
 
   server.listen(port, () => {
     console.log(`Express app listening at http://localhost:${port}`);
