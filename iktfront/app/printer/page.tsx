@@ -75,7 +75,6 @@ export default function Printer() {
     }, []);
 
     const handleAddPrinter = async () => {
-        // Validate all 5 OIDs are filled and correct
         const requiredOids = ["black", "cyan", "magenta", "yellow", "feilkode"];
         const oidsValid = form.oids.length >= 5 && requiredOids.every((name, idx) => form.oids[idx].name === name && form.oids[idx].oid.trim());
         if (
@@ -181,13 +180,11 @@ export default function Printer() {
     };
 
     const openEditModal = (printer: Printer) => {
-        // Always show the 5 required OIDs in the correct order, then any extras
         const requiredOids = ["black", "cyan", "magenta", "yellow", "feilkode"];
         let oids = requiredOids.map(name => {
             const found = printer.oids.find(oid => oid.name === name);
             return found ? { name, oid: found.oid } : { name, oid: "" };
         });
-        // Add any extra OIDs after the required ones
         if (printer.oids && printer.oids.length > 5) {
             oids = oids.concat(printer.oids.slice(5));
         }
@@ -345,7 +342,6 @@ export default function Printer() {
                             />
                             <div className="font-semibold mb-2 text-gray-700">SNMP OIDs (de 5 første er obligatoriske)</div>
                             <div className="space-y-2">
-                                {/* Required OIDs */}
                                 {form.oids.slice(0, 5).map((oid, idx) => (
                                     <div key={oid.name} className="flex gap-2 mb-2 items-center">
                                         <span className="w-28 font-medium capitalize text-gray-700">{oid.name}</span>
@@ -361,7 +357,6 @@ export default function Printer() {
                                         />
                                     </div>
                                 ))}
-                                {/* Extra OIDs */}
                                 {form.oids.slice(5).map((oid, idx) => (
                                     <div key={5 + idx} className="flex gap-2 mb-2 items-center">
                                         <input
