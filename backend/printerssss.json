@@ -1,0 +1,122 @@
+[
+  {
+    "location": "Bilskade lakk",
+    "serial": "3MT11172",
+    "ip": "10.230.144.52",
+    "room": "BA112"
+  },
+  {
+    "location": "Bygg",
+    "serial": "2YA21111",
+    "ip": "10.230.144.54",
+    "room": "G265"
+  },
+  {
+    "location": "Drift",
+    "serial": "3MT11367",
+    "ip": "10.230.144.40",
+    "room": "E128"
+  },
+  {
+    "location": "Elektro",
+    "serial": "3MT11284",
+    "ip": "10.230.144.49",
+    "room": "F224"
+  },
+  {
+    "location": "Elevprinter ved trapp",
+    "serial": "3MV01378",
+    "ip": "10.230.144.42",
+    "room": "H106"
+  },
+  {
+    "location": "Idrett",
+    "serial": "3MT11187",
+    "ip": "10.230.144.39",
+    "room": "E149"
+  },
+  {
+    "location": "IKT",
+    "serial": "3MT11571",
+    "ip": "10.230.144.43",
+    "room": "E140"
+  },
+  {
+    "location": "Kantina",
+    "serial": "CNB2MBHN8N",
+    "ip": "0.0.0.0",
+    "room": "H144"
+  },
+  {
+    "location": "Karriere innlandet",
+    "serial": "3MT11352",
+    "ip": "10.230.144.41",
+    "room": "E110"
+  },
+  {
+    "location": "Salg og Service",
+    "serial": "3MT11370",
+    "ip": "10.230.144.51",
+    "room": "F112"
+  },
+  {
+    "location": "Lærerfløy 1",
+    "serial": "3MT01547",
+    "ip": "10.230.144.45",
+    "room": "H247"
+  },
+  {
+    "location": "Lærerfløy 2",
+    "serial": "3MV01597",
+    "ip": "10.230.144.46",
+    "room": "H247"
+  },
+  {
+    "location": "Rådgivere",
+    "serial": "3MV10810",
+    "ip": "10.230.144.38",
+    "room": "H205"
+  },
+  {
+    "location": "Resepsjon",
+    "serial": "3MV01553",
+    "ip": "10.230.144.44",
+    "room": "A234"
+  },
+  {
+    "location": "Salg og service",
+    "serial": "BAWA3055",
+    "ip": "10.230.144.53",
+    "room": "G112"
+  },
+  {
+    "location": "TIF",
+    "serial": "3MV11204",
+    "ip": "10.230.144.50",
+    "room": "F258"
+  },
+  {
+    "location": "TLA",
+    "serial": "3MV11208",
+    "ip": "10.230.144.47",
+    "room": "D134"
+  },
+  {
+    "location": "Kontor 1",
+    "room": "101",
+    "ip": "192.168.1.10",
+    "serial": "ABC123456"
+  },
+  {
+    "location": "Kontor 2",
+    "room": "102",
+    "ip": "192.168.1.11",
+    "serial": "DEF789012"
+  },
+  {
+    "location": "Møterom A",
+    "room": "201",
+    "ip": "192.168.1.12",
+    "serial": "GHI345678"
+  }
+]

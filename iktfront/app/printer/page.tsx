@@ -35,7 +35,13 @@ export default function Printer() {
         ip: "",
         error: "",
         online: false,
-        oids: [{ name: "", oid: "" }],
+        oids: [
+            { name: "black", oid: "" },
+            { name: "cyan", oid: "" },
+            { name: "magenta", oid: "" },
+            { name: "yellow", oid: "" },
+            { name: "feilkode", oid: "" },
+        ],
     });
 
     const fetchPrinters = async () => {
@@ -69,6 +75,19 @@ export default function Printer() {
     }, []);
 
     const handleAddPrinter = async () => {
+        // Validate all 5 OIDs are filled and correct
+        const requiredOids = ["black", "cyan", "magenta", "yellow", "feilkode"];
+        const oidsValid = form.oids.length >= 5 && requiredOids.every((name, idx) => form.oids[idx].name === name && form.oids[idx].oid.trim());
+        if (
+            !form.model.trim() ||
+            !form.serienumber.trim() ||
+            !form.location.trim() ||
+            !form.ip.trim() ||
+            !oidsValid
+        ) {
+            alert("Alle felter og de 5 første OID-ene (black, cyan, magenta, yellow, feilkode) må fylles ut.");
+            return;
+        }
         try {
             await fetch("http://localhost:64/add", {
                 method: "POST",
@@ -93,7 +112,13 @@ export default function Printer() {
                 ip: "",
                 error: "",
                 online: false,
-                oids: [{ name: "", oid: "" }],
+                oids: [
+                    { name: "black", oid: "" },
+                    { name: "cyan", oid: "" },
+                    { name: "magenta", oid: "" },
+                    { name: "yellow", oid: "" },
+                    { name: "feilkode", oid: "" },
+                ],
             });
             setEditMode(false);
             setEditId(null);
@@ -156,6 +181,16 @@ export default function Printer() {
     };
 
     const openEditModal = (printer: Printer) => {
+        // Always show the 5 required OIDs in the correct order, then any extras
+        const requiredOids = ["black", "cyan", "magenta", "yellow", "feilkode"];
+        let oids = requiredOids.map(name => {
+            const found = printer.oids.find(oid => oid.name === name);
+            return found ? { name, oid: found.oid } : { name, oid: "" };
+        });
+        // Add any extra OIDs after the required ones
+        if (printer.oids && printer.oids.length > 5) {
+            oids = oids.concat(printer.oids.slice(5));
+        }
         setForm({
             model: printer.modell,
             serienumber: printer.serienummer,
@@ -163,7 +198,7 @@ export default function Printer() {
             ip: printer.PrinterIP,
             error: printer.feilkode,
             online: printer.online,
-            oids: printer.oids && printer.oids.length > 0 ? printer.oids.map(oid => ({ name: oid.name, oid: oid.oid })) : [{ name: "", oid: "" }],
+            oids,
         });
         setEditMode(true);
         setEditId(printer.id);
@@ -271,7 +306,13 @@ export default function Printer() {
                                     ip: "",
                                     error: "",
                                     online: false,
-                                    oids: [{ name: "", oid: "" }],
+                                    oids: [
+                                        { name: "black", oid: "" },
+                                        { name: "cyan", oid: "" },
+                                        { name: "magenta", oid: "" },
+                                        { name: "yellow", oid: "" },
+                                        { name: "feilkode", oid: "" },
+                                    ],
                                 });
                             }}
                             aria-label="Close"
@@ -302,12 +343,66 @@ export default function Printer() {
                                 value={form.ip} 
                                 onChange={(e) => setForm(f => ({ ...f, ip: e.target.value }))} 
                             />
-                            <input 
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 text-black" 
-                                placeholder="Error Code (optional)" 
-                                value={form.error} 
-                                onChange={(e) => setForm(f => ({ ...f, error: e.target.value }))} 
-                            />
+                            <div className="font-semibold mb-2 text-gray-700">SNMP OIDs (de 5 første er obligatoriske)</div>
+                            <div className="space-y-2">
+                                {/* Required OIDs */}
+                                {form.oids.slice(0, 5).map((oid, idx) => (
+                                    <div key={oid.name} className="flex gap-2 mb-2 items-center">
+                                        <span className="w-28 font-medium capitalize text-gray-700">{oid.name}</span>
+                                        <input
+                                            className="flex-1 border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-teal-500 text-black"
+                                            placeholder={`OID for ${oid.name}`}
+                                            value={oid.oid}
+                                            onChange={e => {
+                                                const newOids = [...form.oids];
+                                                newOids[idx].oid = e.target.value;
+                                                setForm(f => ({ ...f, oids: newOids }));
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                                {/* Extra OIDs */}
+                                {form.oids.slice(5).map((oid, idx) => (
+                                    <div key={5 + idx} className="flex gap-2 mb-2 items-center">
+                                        <input
+                                            className="w-28 border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-teal-500 text-black"
+                                            placeholder="Navn"
+                                            value={oid.name}
+                                            onChange={e => {
+                                                const newOids = [...form.oids];
+                                                newOids[5 + idx].name = e.target.value;
+                                                setForm(f => ({ ...f, oids: newOids }));
+                                            }}
+                                        />
+                                        <input
+                                            className="flex-1 border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-teal-500 text-black"
+                                            placeholder="OID"
+                                            value={oid.oid}
+                                            onChange={e => {
+                                                const newOids = [...form.oids];
+                                                newOids[5 + idx].oid = e.target.value;
+                                                setForm(f => ({ ...f, oids: newOids }));
+                                            }}
+                                        />
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => {
+                                                setForm(f => ({ ...f, oids: f.oids.filter((_, i) => i !== 5 + idx) }));
+                                            }}
+                                        >
+                                            Fjern
+                                        </Button>
+                                    </div>
+                                ))}
+                                <Button
+                                    size="sm"
+                                    className="mt-2"
+                                    onClick={() => setForm(f => ({ ...f, oids: [...f.oids, { name: "", oid: "" }] }))}
+                                >
+                                    Legg til OID
+                                </Button>
+                            </div>
                             <div className="flex items-center space-x-2">
                                 <input 
                                     type="checkbox" 
@@ -317,51 +412,6 @@ export default function Printer() {
                                     className="rounded"
                                 />
                                 <label htmlFor="online" className="text-gray-700">Is Online</label>
-                            </div>
-                            <div>
-                                <div className="font-semibold mb-2 text-gray-700">SNMP OIDs</div>
-                                {form.oids.map((oid, idx) => (
-                                    <div key={idx} className="flex gap-2 mb-2">
-                                        <input 
-                                            className="flex-1 border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-teal-500 text-black" 
-                                            placeholder="OID Name" 
-                                            value={oid.name} 
-                                            onChange={(e) => {
-                                                const oids = [...form.oids];
-                                                oids[idx].name = e.target.value;
-                                                setForm(f => ({ ...f, oids }));
-                                            }} 
-                                        />
-                                        <input 
-                                            className="flex-1 border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-teal-500 text-black" 
-                                            placeholder="OID Number" 
-                                            value={oid.oid} 
-                                            onChange={(e) => {
-                                                const oids = [...form.oids];
-                                                oids[idx].oid = e.target.value;
-                                                setForm(f => ({ ...f, oids }));
-                                            }} 
-                                        />
-                                        {form.oids.length > 1 && (
-                                            <Button 
-                                                variant="destructive" 
-                                                size="sm" 
-                                                onClick={() => {
-                                                    setForm(f => ({ ...f, oids: f.oids.filter((_, i) => i !== idx) }));
-                                                }}
-                                            >
-                                                Remove
-                                            </Button>
-                                        )}
-                                    </div>
-                                ))}
-                                <Button 
-                                    size="sm" 
-                                    onClick={() => setForm(f => ({ ...f, oids: [...f.oids, { name: "", oid: "" }] }))}
-                                    className="mt-2"
-                                >
-                                    Add OID
-                                </Button>
                             </div>
                             <div className="flex justify-end gap-2 mt-6">
                                 <Button variant="outline" onClick={() => {
@@ -375,7 +425,13 @@ export default function Printer() {
                                         ip: "",
                                         error: "",
                                         online: false,
-                                        oids: [{ name: "", oid: "" }],
+                                        oids: [
+                                            { name: "black", oid: "" },
+                                            { name: "cyan", oid: "" },
+                                            { name: "magenta", oid: "" },
+                                            { name: "yellow", oid: "" },
+                                            { name: "feilkode", oid: "" },
+                                        ],
                                     });
                                 }}>Cancel</Button>
                                 <Button onClick={editMode ? handleEditPrinter : handleAddPrinter}>{editMode ? "Save Changes" : "Save Printer"}</Button>
