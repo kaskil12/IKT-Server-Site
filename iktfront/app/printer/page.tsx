@@ -46,7 +46,7 @@ export default function Printer() {
 
     const fetchPrinters = async () => {
         try {
-            const response = await fetch("http://localhost:64/getAll");
+            const response = await fetch("http://localhost:3000/getAll");
             const data = await response.json();
             setPrinters(data);
             setLoading(false);
@@ -62,7 +62,7 @@ export default function Printer() {
 
         const interval = setInterval(fetchPrinters, 5 * 60 * 1000);
 
-        const socket = io("http://localhost:64");
+        const socket = io("http://localhost:3000");
         socket.on("printersUpdated", (data: Printer[]) => {
             setPrinters(data);
             setLoading(false);
@@ -88,7 +88,7 @@ export default function Printer() {
             return;
         }
         try {
-            await fetch("http://localhost:64/add", {
+            await fetch("http://localhost:3000/add", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -130,7 +130,7 @@ export default function Printer() {
     const handleEditPrinter = async () => {
         if (editId === null) return;
         try {
-            await fetch("http://localhost:64/update", {
+            await fetch("http://localhost:3000/update", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -166,7 +166,7 @@ export default function Printer() {
 
     const handleDeletePrinter = async (id: number) => {
         try {
-            await fetch("http://localhost:64/delete", {
+            await fetch("http://localhost:3000/delete", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

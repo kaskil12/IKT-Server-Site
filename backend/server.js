@@ -4,7 +4,7 @@ const snmp = require('net-snmp');
 const http = require('http');
 const socketio = require('socket.io');
 const app = express();
-const port = 64;
+const port = 3000;
 const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
