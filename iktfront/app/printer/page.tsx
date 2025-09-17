@@ -227,29 +227,29 @@ export default function Printer() {
                             <div className="absolute top-2 right-2 flex gap-1 z-10">
                                 <Button
                                     size="sm"
-                                    className="bg-white text-black border border-gray-300 hover:bg-gray-100 hover:text-black px-2 py-1 text-xs"
+                                    className="  bg-transparent hover:bg-gray-100 hover:text-black px-2 py-1 text-xs"
                                     onClick={() => openEditModal(printer)}
                                 >
                                     <FaEdit className="mb-0"/>
                                 </Button>
                                 <Button
                                     size="sm"
-                                    className="bg-white text-red-600 border border-red-500 hover:bg-red-50 hover:text-red-700 px-2 py-1 text-xs"
+                                    className="bg-transparent text-red-600  hover:bg-red-50 hover:text-red-700 px-2 py-1 text-xs"
                                     onClick={() => handleDeletePrinter(printer.id)}
                                 >
                                     <MdDeleteForever className="mb-0"/>
                                 </Button>
                             </div>
                             <div className="mb-2">
-                                <p className="text-white text-sm flex flex-row items-center">
-                                    <GoRss  style={{ marginBottom: '2px' }}/> {printer.PrinterIP}
-                                </p>
-                                <p className="text-white text-sm flex flex-row items-center "> <RiQrScanFill className="mb-0"/> {printer.serienummer}</p>
-                                <p className="text-white text-sm flex flex-row items-center">
+                                <p className="text-white text-2xl flex flex-row items-center">
                                     <IoIosPin style={{ marginBottom: '-2px' }} /> {printer.plassering}
                                 </p>
-                                <p className="text-white text-sm flex flex-row items-center">{printer.online  ? <PiGlobeSimpleBold className="mb-0"/> : <PiGlobeSimpleXBold className="mb-0"/>}
-                                    <span className={`ml-1 px-2 py-0.5 rounded text-xs ${printer.online ? 'bg-green-600' : 'bg-red-600'}`}>
+                                <p className="text-white text-md flex flex-row items-center">
+                                    <GoRss  style={{ marginBottom: '2px' }}/> {printer.PrinterIP}
+                                </p>
+                                <p className="text-white text-md flex flex-row items-center "> <RiQrScanFill className="mb-0"/> {printer.serienummer}</p>
+                                <p className="text-white text-md flex flex-row items-center">{printer.online  ? <PiGlobeSimpleBold className="mb-0 size-5"/> : <PiGlobeSimpleXBold className="mb-0"/>}
+                                    <span className={`ml-1 px-2 py-0.5 rounded text-md ${printer.online ? 'bg-green-600' : 'bg-red-600'}`}>
                                         {printer.online ? 'Online' : 'Offline'}
                                     </span>
                                 </p>
@@ -263,8 +263,8 @@ export default function Printer() {
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead className="text-white text-xs">Name</TableHead>
-                                                <TableHead className="text-white text-xs">Value</TableHead>
+                                                <TableHead className="text-white text-xs font-bold">Name</TableHead>
+                                                <TableHead className="text-white text-xs font-bold">Value</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -300,8 +300,8 @@ export default function Printer() {
                                                 }
                                                 return (
                                                     <TableRow key={idx}>
-                                                        <TableCell className="text-white text-xs">{displayName}</TableCell>
-                                                        <TableCell className="text-white text-xs">{value !== undefined && value !== null ? value : 'No data'}</TableCell>
+                                                        <TableCell className="text-white text-xs font-bold">{displayName}</TableCell>
+                                                        <TableCell className="text-white text-xs font-bold">{value !== undefined && value !== null ? value : 'No data'}</TableCell>
                                                     </TableRow>
                                                 );
                                             })}
