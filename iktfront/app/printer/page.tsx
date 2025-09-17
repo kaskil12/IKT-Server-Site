@@ -287,9 +287,20 @@ export default function Printer() {
                                                         value = String(value);
                                                     }
                                                 }
+                                                const colorEmojis: Record<string, string> = {
+                                                    yellow: '🟡',
+                                                    magenta: '🟣',
+                                                    cyan: '🔵',
+                                                    black: '⚫',
+                                                    feilkode: '⚠️',
+                                                };
+                                                let displayName = oid.name ?? '';
+                                                if (colorEmojis[displayName.toLowerCase()]) {
+                                                    displayName = colorEmojis[displayName.toLowerCase()];
+                                                }
                                                 return (
                                                     <TableRow key={idx}>
-                                                        <TableCell className="text-white text-xs">{oid.name ?? ''}</TableCell>
+                                                        <TableCell className="text-white text-xs">{displayName}</TableCell>
                                                         <TableCell className="text-white text-xs">{value !== undefined && value !== null ? value : 'No data'}</TableCell>
                                                     </TableRow>
                                                 );
