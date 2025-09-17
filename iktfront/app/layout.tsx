@@ -29,7 +29,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen bg-gradient-to-br from-green-700 to-teal-900`}
       ></body> */}
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen bg-gradient-to-br from-green-950 to-teal-950`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen bg-gradient-to-br from-green-700 to-teal-900`}
       >
         <header>
           <Navbar04Page/>

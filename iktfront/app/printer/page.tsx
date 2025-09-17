@@ -214,9 +214,13 @@ export default function Printer() {
                     <p className="text-xl">Loading printers...</p>
                 </div>
             ) : (
-                <div className="grid gap-6">
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                     {printers.map((printer) => (
-                        <Card key={printer.id} className="p-6 bg-white/10 backdrop-blur-md border-none">
+                        <Card key={printer.id} className="p-6 bg-white/10 backdrop-blur-md border-none relative">
+                            <div className="absolute top-4 right-4 flex gap-2 z-10">
+                                <Button size="sm" onClick={() => openEditModal(printer)} className="bg-blue-600 hover:bg-blue-700">Edit</Button>
+                                <Button size="sm" variant="destructive" onClick={() => handleDeletePrinter(printer.id)}>Delete</Button>
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <h3 className="text-xl font-bold text-white mb-2">{printer.modell}</h3>
@@ -234,10 +238,6 @@ export default function Printer() {
                                         <p className="text-white"><strong>Error:</strong> {printer.feilkode}</p>
                                     )}
                                 </div>
-                            </div>
-                            <div className="flex gap-2 mb-4">
-                                <Button size="sm" onClick={() => openEditModal(printer)} className="bg-blue-600 hover:bg-blue-700">Edit</Button>
-                                <Button size="sm" variant="destructive" onClick={() => handleDeletePrinter(printer.id)}>Delete</Button>
                             </div>
                             {printer.oids && printer.oids.length > 0 && (
                                 <div>
