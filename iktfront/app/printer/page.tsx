@@ -224,24 +224,27 @@ export default function Printer() {
                 <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
                     {printers.map((printer) => (
                         <Card key={printer.id} className="p-3 bg-white/10 backdrop-blur-md border-none relative min-h-[120px] flex flex-col justify-between">
-                            <div className="absolute top-2 right-2 flex gap-1 z-10">
+                            <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
                                 <Button
                                     size="sm"
-                                    className="  bg-transparent hover:bg-gray-100 hover:text-black px-2 py-1 text-xs"
+                                    className="bg-transparent hover:bg-gray-100 hover:text-black px-2 py-1 text-xs"
                                     onClick={() => openEditModal(printer)}
                                 >
                                     <FaEdit className="mb-0"/>
                                 </Button>
                                 <Button
                                     size="sm"
-                                    className="bg-transparent text-red-600  hover:bg-red-50 hover:text-red-700 px-2 py-1 text-xs"
+                                    className="bg-transparent text-red-600 hover:bg-red-50 hover:text-red-700 px-2 py-1 text-xs"
                                     onClick={() => handleDeletePrinter(printer.id)}
                                 >
                                     <MdDeleteForever className="mb-0"/>
                                 </Button>
                             </div>
                             <div className="mb-2">
-                                <p className="text-white text-2xl flex flex-row items-center">
+                                <p
+                                    className="text-white text-2xl flex flex-row items-center break-all overflow-hidden whitespace-pre-line"
+                                    style={{ wordBreak: 'break-all', maxWidth: 'calc(100% - 44px)', minHeight: '32px' }}
+                                >
                                     <IoIosPin style={{ marginBottom: '-2px' }} /> {printer.plassering}
                                 </p>
                                 <p className="text-white text-md flex flex-row items-center">
