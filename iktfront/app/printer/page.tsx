@@ -4,7 +4,7 @@ import io from "socket.io-client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
+import { IoIosPin } from "react-icons/io";
 interface OID {
     name: string;
     oid: string;
@@ -204,8 +204,9 @@ export default function Printer() {
 
     return (
         <div className="flex flex-col min-h-screen p-6 text-white">
+
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Printer Management</h1>
+                <h1 className="text-2xl font-bold">Printer Management</h1>
                 <Button onClick={() => setOpen(true)}>Add Printer</Button>
             </div>
 
@@ -214,52 +215,48 @@ export default function Printer() {
                     <p className="text-xl">Loading printers...</p>
                 </div>
             ) : (
-                <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
                     {printers.map((printer) => (
-                        <Card key={printer.id} className="p-6 bg-white/10 backdrop-blur-md border-none relative">
-                            <div className="absolute top-4 right-4 flex gap-2 z-10">
+                        <Card key={printer.id} className="p-3 bg-white/10 backdrop-blur-md border-none relative min-h-[120px] flex flex-col justify-between">
+                            <div className="absolute top-2 right-2 flex gap-1 z-10">
                                 <Button
                                     size="sm"
-                                    className="bg-white text-black border border-gray-300 hover:bg-gray-100 hover:text-black"
+                                    className="bg-white text-black border border-gray-300 hover:bg-gray-100 hover:text-black px-2 py-1 text-xs"
                                     onClick={() => openEditModal(printer)}
                                 >
                                     Edit
                                 </Button>
                                 <Button
                                     size="sm"
-                                    className="bg-white text-red-600 border border-red-500 hover:bg-red-50 hover:text-red-700"
+                                    className="bg-white text-red-600 border border-red-500 hover:bg-red-50 hover:text-red-700 px-2 py-1 text-xs"
                                     onClick={() => handleDeletePrinter(printer.id)}
                                 >
                                     Delete
                                 </Button>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <h3 className="text-xl font-bold text-white mb-2">{printer.modell}</h3>
-                                    <p className="text-white"><strong>Serial Number:</strong> {printer.serienummer}</p>
-                                    <p className="text-white"><strong>IP Address:</strong> {printer.PrinterIP}</p>
-                                    <p className="text-white"><strong>Location:</strong> {printer.plassering}</p>
-                                </div>
-                                <div>
-                                    <p className="text-white"><strong>Status:</strong> 
-                                        <span className={`ml-2 px-2 py-1 rounded ${printer.online ? 'bg-green-600' : 'bg-red-600'}`}>
-                                            {printer.online ? 'Online' : 'Offline'}
-                                        </span>
-                                    </p>
-                                    {printer.feilkode && (
-                                        <p className="text-white"><strong>Error:</strong> {printer.feilkode}</p>
-                                    )}
-                                </div>
+                            <div className="mb-2">
+                                <p className="text-white text-sm"><strong>IP:</strong> {printer.PrinterIP}</p>
+                                <p className="text-white text-sm"> <strong>SN:</strong> {printer.serienummer}</p>
+                                <p className="text-white text-sm flex flex-row items-center">
+                                    <IoIosPin style={{ marginBottom: '-2px' }} /> {printer.plassering}
+                                </p>
+                                <p className="text-white text-sm"><strong>Status:</strong>
+                                    <span className={`ml-1 px-2 py-0.5 rounded text-xs ${printer.online ? 'bg-green-600' : 'bg-red-600'}`}>
+                                        {printer.online ? 'Online' : 'Offline'}
+                                    </span>
+                                </p>
+                                {printer.feilkode && (
+                                    <p className="text-white text-xs mt-1"><strong>Error:</strong> {printer.feilkode}</p>
+                                )}
                             </div>
                             {printer.oids && printer.oids.length > 0 && (
                                 <div>
-                                    <h4 className="text-lg font-semibold text-white mb-2">SNMP OIDs</h4>
+                                    <h4 className="text-xs font-semibold text-white mb-1">SNMP</h4>
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead className="text-white">Name</TableHead>
-                                                <TableHead className="text-white">OID</TableHead>
-                                                <TableHead className="text-white">Value</TableHead>
+                                                <TableHead className="text-white text-xs">Name</TableHead>
+                                                <TableHead className="text-white text-xs">Value</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -284,9 +281,8 @@ export default function Printer() {
                                                 }
                                                 return (
                                                     <TableRow key={idx}>
-                                                        <TableCell className="text-white">{oid.name ?? ''}</TableCell>
-                                                        <TableCell className="text-white">{oid.oid ?? ''}</TableCell>
-                                                        <TableCell className="text-white">{value !== undefined && value !== null ? value : 'No data'}</TableCell>
+                                                        <TableCell className="text-white text-xs">{oid.name ?? ''}</TableCell>
+                                                        <TableCell className="text-white text-xs">{value !== undefined && value !== null ? value : 'No data'}</TableCell>
                                                     </TableRow>
                                                 );
                                             })}
@@ -421,7 +417,7 @@ export default function Printer() {
                                 <label htmlFor="online" className="text-gray-700">Is Online</label>
                             </div>
                             <div className="flex justify-end gap-2 mt-6">
-                                <Button variant="outline" onClick={() => {
+                                <Button variant="outline" className="text-black" onClick={() => {
                                     setOpen(false);
                                     setEditMode(false);
                                     setEditId(null);
