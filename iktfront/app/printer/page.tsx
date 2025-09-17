@@ -221,9 +221,26 @@ export default function Printer() {
                     <p className="text-xl">Loading printers...</p>
                 </div>
             ) : (
-                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+                <div
+                    className="grid gap-4"
+                    style={{
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                        width: '100%',
+                        overflowX: 'auto',
+                    }}
+                >
                     {printers.map((printer) => (
-                        <Card key={printer.id} className="p-3 bg-white/10 backdrop-blur-md border-none relative min-h-[120px] flex flex-col justify-between">
+                        <Card
+                            key={printer.id}
+                            className="p-3 bg-white/10 backdrop-blur-md border-none relative flex flex-col justify-between"
+                            style={{
+                                minWidth: 0,
+                                maxWidth: '100%',
+                                minHeight: '120px',
+                                wordBreak: 'break-word',
+                                overflow: 'hidden',
+                            }}
+                        >
                             <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
                                 <Button
                                     size="sm"
@@ -242,8 +259,8 @@ export default function Printer() {
                             </div>
                             <div className="mb-2">
                                 <p
-                                    className="text-white text-2xl flex flex-row items-center break-all overflow-hidden whitespace-pre-line"
-                                    style={{ wordBreak: 'break-all', maxWidth: 'calc(100% - 44px)', minHeight: '32px' }}
+                                    className="text-white text-2xl flex flex-row items-center break-all whitespace-pre-line"
+                                    style={{ wordBreak: 'break-all', maxWidth: '100%', minHeight: '32px', overflowWrap: 'break-word' }}
                                 >
                                     <IoIosPin style={{ marginBottom: '-2px' }} /> {printer.plassering}
                                 </p>
