@@ -218,8 +218,20 @@ export default function Printer() {
                     {printers.map((printer) => (
                         <Card key={printer.id} className="p-6 bg-white/10 backdrop-blur-md border-none relative">
                             <div className="absolute top-4 right-4 flex gap-2 z-10">
-                                <Button size="sm" onClick={() => openEditModal(printer)} className="bg-blue-600 hover:bg-blue-700">Edit</Button>
-                                <Button size="sm" variant="destructive" onClick={() => handleDeletePrinter(printer.id)}>Delete</Button>
+                                <Button
+                                    size="sm"
+                                    className="bg-white text-black border border-gray-300 hover:bg-gray-100 hover:text-black"
+                                    onClick={() => openEditModal(printer)}
+                                >
+                                    Edit
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    className="bg-white text-red-600 border border-red-500 hover:bg-red-50 hover:text-red-700"
+                                    onClick={() => handleDeletePrinter(printer.id)}
+                                >
+                                    Delete
+                                </Button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
