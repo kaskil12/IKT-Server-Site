@@ -5,6 +5,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { IoIosPin } from "react-icons/io";
+import { GoRss } from "react-icons/go";
+import { RiQrScanFill } from "react-icons/ri";
+import { PiGlobeSimpleBold } from "react-icons/pi";
+import { PiGlobeSimpleXBold } from "react-icons/pi";
+import { FaEdit } from "react-icons/fa";
+import { MdDeleteForever } from "react-icons/md";
 interface OID {
     name: string;
     oid: string;
@@ -224,23 +230,25 @@ export default function Printer() {
                                     className="bg-white text-black border border-gray-300 hover:bg-gray-100 hover:text-black px-2 py-1 text-xs"
                                     onClick={() => openEditModal(printer)}
                                 >
-                                    Edit
+                                    <FaEdit className="mb-0"/>
                                 </Button>
                                 <Button
                                     size="sm"
                                     className="bg-white text-red-600 border border-red-500 hover:bg-red-50 hover:text-red-700 px-2 py-1 text-xs"
                                     onClick={() => handleDeletePrinter(printer.id)}
                                 >
-                                    Delete
+                                    <MdDeleteForever className="mb-0"/>
                                 </Button>
                             </div>
                             <div className="mb-2">
-                                <p className="text-white text-sm"><strong>IP:</strong> {printer.PrinterIP}</p>
-                                <p className="text-white text-sm"> <strong>SN:</strong> {printer.serienummer}</p>
+                                <p className="text-white text-sm flex flex-row items-center">
+                                    <GoRss  style={{ marginBottom: '2px' }}/> {printer.PrinterIP}
+                                </p>
+                                <p className="text-white text-sm flex flex-row items-center "> <RiQrScanFill className="mb-0"/> {printer.serienummer}</p>
                                 <p className="text-white text-sm flex flex-row items-center">
                                     <IoIosPin style={{ marginBottom: '-2px' }} /> {printer.plassering}
                                 </p>
-                                <p className="text-white text-sm"><strong>Status:</strong>
+                                <p className="text-white text-sm flex flex-row items-center">{printer.online  ? <PiGlobeSimpleBold className="mb-0"/> : <PiGlobeSimpleXBold className="mb-0"/>}
                                     <span className={`ml-1 px-2 py-0.5 rounded text-xs ${printer.online ? 'bg-green-600' : 'bg-red-600'}`}>
                                         {printer.online ? 'Online' : 'Offline'}
                                     </span>
