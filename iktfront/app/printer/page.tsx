@@ -224,7 +224,7 @@ export default function Printer() {
                 <div
                     className="grid gap-4"
                     style={{
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
                         width: '100%',
                         overflowX: 'auto',
                     }}

@@ -42,16 +42,10 @@
     "room": "E140"
   },
   {
-    "location": "Kantina",
-    "serial": "CNB2MBHN8N",
-    "ip": "0.0.0.0",
-    "room": "H144"
-  },
-  {
     "location": "Karriere innlandet",
     "serial": "3MT11352",
     "ip": "10.230.144.41",
-    "room": "E110"
+    "room": "Karriere"
   },
   {
     "location": "Salg og Service",
@@ -100,23 +94,5 @@
     "serial": "3MV11208",
     "ip": "10.230.144.47",
     "room": "D134"
-  },
-  {
-    "location": "Kontor 1",
-    "room": "101",
-    "ip": "192.168.1.10",
-    "serial": "ABC123456"
-  },
-  {
-    "location": "Kontor 2",
-    "room": "102",
-    "ip": "192.168.1.11",
-    "serial": "DEF789012"
-  },
-  {
-    "location": "Møterom A",
-    "room": "201",
-    "ip": "192.168.1.12",
-    "serial": "GHI345678"
   }
 ]
