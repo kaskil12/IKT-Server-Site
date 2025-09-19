@@ -1,4 +1,7 @@
+
+"use client";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ChartLineLabel,
@@ -11,9 +14,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
+import DeviceBox from "@/components/DeviceBox/devicebox";
 
-import DeviceBox from "@/components/DeviceBox/devicebox"
 
 const tableData = [
   { dato: "11.05.2025", status: "Under behandling", tittel: "Knust PC", navn: "Ole Dole" },
@@ -26,7 +29,107 @@ const tableData = [
   { dato: "18.05.2025", status: "Løst", tittel: "E-post konfigurasjon", navn: "Ida Kristiansen" }
 ];
 
+type Printer = {
+  id: number;
+  modell: string;
+  serienummer: string;
+  PrinterIP: string;
+  plassering: string;
+  oids: any[];
+  feilkode: string;
+  online: boolean;
+};
+
 export default function Home() {
+  const [printers, setPrinters] = useState<Printer[]>([]);
+  const [settingsStrings, setSettingsStrings] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [printerRes, settingsRes] = await Promise.all([
+          fetch("http://localhost:3000/getAll"),
+          fetch("http://localhost:3000/settings")
+        ]);
+        const printers = await printerRes.json();
+        const settings = await settingsRes.json();
+        setPrinters(printers);
+        setSettingsStrings(settings);
+      } catch (e) {
+        setPrinters([]);
+        setSettingsStrings([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  console.log("printers", printers);
+  console.log("settingsStrings", settingsStrings);
+  function normalize(str: string) {
+    return str.toLowerCase().replace(/[^a-z0-9æøåäöüéèáà. ]/gi, '').replace(/[.,!?;:]/g, '').trim();
+  }
+
+  interface OidValueBuffer {
+    type: 'Buffer';
+    data: number[];
+  }
+
+  interface Oid {
+    name: string;
+    value: string | number | OidValueBuffer | { data: number[] } | any;
+  }
+
+  function getFeilkodeFromOids(printer: { oids: Oid[] }): string {
+    if (!printer.oids || !Array.isArray(printer.oids)) return "";
+    const feilkodeOid = printer.oids.find(
+      (oid: Oid) => oid.name && oid.name.toLowerCase() === "feilkode"
+    );
+    if (!feilkodeOid || feilkodeOid.value == null) return "";
+    let value: any = feilkodeOid.value;
+    if (value && typeof value === 'object') {
+      if (Array.isArray((value as { data?: any[] }).data)) {
+        try {
+          value = Buffer.from((value as { data: number[] }).data).toString();
+        } catch {
+          value = '[unreadable octet string]';
+        }
+      } else if ((value as OidValueBuffer).type === 'Buffer' && Array.isArray((value as OidValueBuffer).data)) {
+        try {
+          value = Buffer.from((value as OidValueBuffer).data).toString();
+        } catch {
+          value = '[unreadable octet string]';
+        }
+      } else {
+        value = String(value);
+      }
+    }
+    return value;
+  }
+
+  const printersWithFeilkode = printers
+    .map(printer => ({ ...printer, feilkodeFromOid: getFeilkodeFromOids(printer) }))
+    .filter(printer => printer.feilkodeFromOid && printer.feilkodeFromOid.trim() !== "");
+  console.log("printersWithFeilkode", printersWithFeilkode);
+  const errorPrinters = printersWithFeilkode.filter((printer) => {
+    const normError = normalize(printer.feilkodeFromOid);
+    let isWhitelisted = false;
+    settingsStrings.forEach(str => {
+      if (!str) return;
+      const normWhite = normalize(str);
+      const match = normError === normWhite || normError.includes(normWhite) || normWhite.includes(normError);
+      console.log(
+        `\n---\nRAW feilkode: '${printer.feilkodeFromOid}'\nRAW whitelist: '${str}'\nNORMALIZED feilkode: '${normError}'\nNORMALIZED whitelist: '${normWhite}'\nMatch:`,
+        match
+      );
+      if (match) isWhitelisted = true;
+    });
+    return !isWhitelisted;
+  });
+  console.log("errorPrinters", errorPrinters);
+
   return (
     <div className="flex flex-row justify-center gap-0">
       <div className="w-5xl h-screen flex-initial items-center justify-center gap-6 p-6 text-white">
@@ -50,9 +153,24 @@ export default function Home() {
             ))}
           </TableBody>
         </Table>
+
+        {/* {errorPrinters.length > 0 && (
+          <div className="mt-8 p-4 bg-red-900/80 rounded-xl shadow-lg">
+            <h2 className="text-lg font-bold text-red-300 mb-2">Printere med feil (ikke whitelisted):</h2>
+            <ul className="space-y-2">
+              {errorPrinters.map((printer) => (
+                <li key={printer.id} className="flex flex-col gap-1">
+                  <span className="font-semibold">{printer.modell} ({printer.PrinterIP})</span>
+                  <span className="text-red-200">Feilkode: {printer.feilkode}</span>
+                  <span className="text-xs text-gray-300">Plassering: {printer.plassering}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )} */}
       </div>
       <div className="w-3xl h-3xl flex-initial gap-6 p-6 flex flex-col">
-        <ChartLineLabel cardTitle="Nettverkstrafikk" cardDescription="Siste 30 dager" trendingText="+5% siden forrige måned" footerText="Oppetid 99.99%" 
+        <ChartLineLabel cardTitle="Nettverkstrafikk" cardDescription="Siste 30 dager" trendingText="+5% siden forrige måned" footerText="Oppetid 99.99%"
         chartData={[{ month: "January", antall: 186 },
           { month: "February", antall: 305 },
           { month: "March", antall: 237 },
@@ -60,13 +178,12 @@ export default function Home() {
           { month: "May", antall: 209 },
           { month: "June", antall: 214}]} />
         <DeviceBox
-          devices={[
-            { name: "Router #12", error: "Connection lost", location: "H211" },
-            { name: "Switch #5", error: "Overheating", location: "C Fløy" },
-            { name: "AP #7", error: "No power", location: "IKT" },
-          ]}
+          devices={errorPrinters.map(printer => ({
+            name: printer.modell + ' (' + printer.PrinterIP + ')',
+            error: printer.feilkodeFromOid,
+            location: printer.plassering
+          }))}
         />
-
       </div>
     </div>
   );

@@ -4,6 +4,10 @@ const snmp = require('net-snmp');
 const http = require('http');
 const socketio = require('socket.io');
 const app = express();
+
+app.use(cors());
+app.use(express.json());
+
 const port = 3000;
 const server = http.createServer(app);
 const io = socketio(server, {
@@ -12,10 +16,20 @@ const io = socketio(server, {
     methods: ['GET', 'POST']
   }
 });
+
+
+
+
 const sequelizeDB = require("./database.js");
 const Printer = require("./models/Printer.js");
+const SettingString = require("./models/SettingString.js");
 Printer.init(sequelizeDB);
-Printer.sync().then(() => {
+SettingString.init(sequelizeDB);
+
+Promise.all([
+  Printer.sync(),
+  SettingString.sync()
+]).then(() => {
   updatePrintersStatus();
   setInterval(updatePrintersStatus, 3 * 60 * 1000);
 
@@ -24,9 +38,40 @@ Printer.sync().then(() => {
   });
 });
 
+app.get('/settings', async (req, res) => {
+  try {
+    const settings = await SettingString.findAll();
+    res.json(settings.map(s => s.value));
+  } catch (e) {
+    res.status(500).json([]);
+  }
+});
 
-app.use(cors());
-app.use(express.json());
+app.post('/settings/add', async (req, res) => {
+  const { value } = req.body;
+  if (!value || typeof value !== 'string') {
+    return res.status(400).json({ error: 'Missing value' });
+  }
+  try {
+    const [setting, created] = await SettingString.findOrCreate({ where: { value } });
+    res.json({ value: setting.value, created });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+app.post('/settings/delete', async (req, res) => {
+  const { value } = req.body;
+  if (!value || typeof value !== 'string') {
+    return res.status(400).json({ error: 'Missing value' });
+  }
+  try {
+    const deleted = await SettingString.destroy({ where: { value } });
+    res.json({ value, deleted: deleted > 0 });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.use(express.static('public'));
 
 io.on('connection', (socket) => {

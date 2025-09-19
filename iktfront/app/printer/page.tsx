@@ -1,5 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
+
+const fetchSettingsStrings = async () => {
+    try {
+        const response = await fetch("http://localhost:3000/settings");
+        if (!response.ok) throw new Error("Failed to fetch settings");
+        return await response.json();
+    } catch (e) {
+        return [];
+    }
+};
 import io from "socket.io-client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +42,7 @@ export default function Printer() {
     const [printers, setPrinters] = useState<Printer[]>([]);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
+    const [openSettings, setOpenSettings] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
     const [form, setForm] = useState({
@@ -49,6 +60,37 @@ export default function Printer() {
             { name: "feilkode", oid: "" },
         ],
     });
+    const [settingsStrings, setSettingsStrings] = useState<string[]>([]);
+    const [newSetting, setNewSetting] = useState("");
+    const [addingSetting, setAddingSetting] = useState(false);
+    const handleAddSettingString = async () => {
+        if (!newSetting.trim()) return;
+        setAddingSetting(true);
+        try {
+            const res = await fetch("http://localhost:3000/settings/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ value: newSetting.trim() })
+            });
+            if (res.ok) {
+                setNewSetting("");
+                fetchSettingsStrings().then(setSettingsStrings);
+            }
+        } catch (e) {}
+        setAddingSetting(false);
+    };
+    const handleDeleteSettingString = async (str: string) => {
+        try {
+            const res = await fetch("http://localhost:3000/settings/delete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ value: str })
+            });
+            if (res.ok) {
+                fetchSettingsStrings().then(setSettingsStrings);
+            }
+        } catch (e) {}
+    };
 
     const fetchPrinters = async () => {
         try {
@@ -65,6 +107,7 @@ export default function Printer() {
 
     useEffect(() => {
         fetchPrinters();
+        fetchSettingsStrings().then(setSettingsStrings);
 
         const interval = setInterval(fetchPrinters, 5 * 60 * 1000);
 
@@ -210,11 +253,14 @@ export default function Printer() {
 
     return (
         <div className="flex flex-col min-h-screen p-6 text-white">
-
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Printer Management</h1>
-                <Button onClick={() => setOpen(true)}>Add Printer</Button>
+                <div className="flex gap-2">
+                    <Button className="bg-green-700" onClick={() => setOpenSettings(true)}>Settings</Button>
+                    <Button className="bg-green-700" onClick={() => setOpen(true)}>Add Printer</Button>
+                </div>
             </div>
+        
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">
@@ -273,9 +319,16 @@ export default function Printer() {
                                         {printer.online ? 'Online' : 'Offline'}
                                     </span>
                                 </p>
-                                {printer.feilkode && (
-                                    <p className="text-white text-xs mt-1"><strong>Error:</strong> {printer.feilkode}</p>
-                                )}
+                                    {printer.feilkode && (
+                                        <p className="text-white text-xs mt-1">
+                                            <strong>Error:</strong> {printer.feilkode}
+                                            {Array.isArray(settingsStrings) && settingsStrings.length > 0 && settingsStrings.some(str => str && printer.feilkode && printer.feilkode.includes(str)) ? (
+                                                <span className="ml-2 text-yellow-400 text-lg font-bold">✅</span>
+                                            ) : (
+                                                <span className="ml-2 text-red-500 text-lg font-bold">‼️</span>
+                                            )}
+                                        </p>
+                                    )}
                             </div>
                             {printer.oids && printer.oids.length > 0 && (
                                 <div>
@@ -312,16 +365,29 @@ export default function Printer() {
                                                     magenta: '🟣',
                                                     cyan: '🔵',
                                                     black: '⚫',
-                                                    feilkode: '⚠️',
                                                 };
                                                 let displayName = oid.name ?? '';
-                                                if (colorEmojis[displayName.toLowerCase()]) {
+                                                let isFeilkode = displayName.toLowerCase() === 'feilkode';
+                                                if (!isFeilkode && colorEmojis[displayName.toLowerCase()]) {
                                                     displayName = colorEmojis[displayName.toLowerCase()];
                                                 }
+                                                let valueDisplay = value;
+                                                   let isWhitelisted = false;
+                                                   if (isFeilkode && value) {
+                                                       isWhitelisted = Array.isArray(settingsStrings) && settingsStrings.length > 0 && settingsStrings.some(str => str && value.includes(str));
+                                                       valueDisplay = (
+                                                           <span className={isWhitelisted ? 'text-yellow-400' : 'text-red-500'}>
+                                                               {value}
+                                                           </span>
+                                                       );
+                                                   }
+                                                   if (isFeilkode) {
+                                                       displayName = isWhitelisted ? '✅' : '‼️';
+                                                   }
                                                 return (
                                                     <TableRow key={idx}>
                                                         <TableCell className="text-white text-xs font-bold">{displayName}</TableCell>
-                                                        <TableCell className="text-white text-xs font-bold">{value !== undefined && value !== null ? value : 'No data'}</TableCell>
+                                                        <TableCell className="text-white text-xs font-bold">{isFeilkode ? valueDisplay : (value !== undefined && value !== null ? value : 'No data')}</TableCell>
                                                     </TableRow>
                                                 );
                                             })}
@@ -482,6 +548,49 @@ export default function Printer() {
                     </div>
                 </div>
             )}
-        </div>
-    );
-}
+                {openSettings && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                        <div className="bg-white rounded-xl shadow-2xl w-[400px] p-8 border border-gray-200 relative max-h-[90vh] overflow-y-auto">
+                            <button
+                                className="absolute top-3 left-3 text-gray-400 hover:text-gray-700 text-xl font-bold"
+                                onClick={() => setOpenSettings(false)}
+                                aria-label="Close"
+                            >
+                                &times;
+                            </button>
+                            <h3 className="text-2xl font-bold mb-6 text-center text-gray-800">Whitelist feilkoder</h3>
+                            <div className="space-y-4">
+                                <ul className="mb-4 max-h-40 overflow-y-auto">
+                                    {settingsStrings.map((str, idx) => (
+                                        <li key={idx} className="flex justify-between items-center">
+                                            <span className="text-black border-b py-1">{str}</span>
+                                            <button className="text-red-600 border rounded-md bg-red-100 hover:bg-red-200" onClick={() => handleDeleteSettingString(str)}>Delete</button>
+                                        </li>
+                                    ))}
+                                    
+                                </ul>
+                                <div className="flex gap-2 mb-2">
+                                    <input
+                                        type="text"
+                                        className="border rounded px-2 py-1 flex-1 text-black"
+                                        placeholder="Legg til ny feilkode..."
+                                        value={typeof newSetting !== 'undefined' ? newSetting : ''}
+                                        onChange={e => setNewSetting(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter') handleAddSettingString(); }}
+                                        disabled={addingSetting}
+                                    />
+                                    <button
+                                        className="bg-green-600 text-white px-3 py-1 rounded"
+                                        onClick={handleAddSettingString}
+                                        disabled={addingSetting || !newSetting?.trim()}
+                                    >Legg til</button>
+                                </div>
+                                <button className="mt-2 text-sm text-gray-600 underline" onClick={() => setOpenSettings(false)}>Lukk</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                </div>
+        );
+    }
+
