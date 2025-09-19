@@ -1,8 +1,9 @@
 
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+
 import {
   ChartLineLabel,
 } from "@/components/chart-line-label/chart-line-label";
@@ -45,7 +46,9 @@ export default function Home() {
   const [settingsStrings, setSettingsStrings] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
+    let socket: any = null;
     const fetchData = async () => {
       try {
         const [printerRes, settingsRes] = await Promise.all([
@@ -64,6 +67,18 @@ export default function Home() {
       }
     };
     fetchData();
+
+
+    const io = require("socket.io-client");
+    socket = io("http://localhost:3000");
+    socket.on("printersUpdated", (data: Printer[]) => {
+      setPrinters(data);
+      setLoading(false);
+    });
+
+    return () => {
+      if (socket) socket.disconnect();
+    };
   }, []);
 
   console.log("printers", printers);
@@ -109,26 +124,30 @@ export default function Home() {
     return value;
   }
 
-  const printersWithFeilkode = printers
-    .map(printer => ({ ...printer, feilkodeFromOid: getFeilkodeFromOids(printer) }))
-    .filter(printer => printer.feilkodeFromOid && printer.feilkodeFromOid.trim() !== "");
-  console.log("printersWithFeilkode", printersWithFeilkode);
-  const errorPrinters = printersWithFeilkode.filter((printer) => {
-    const normError = normalize(printer.feilkodeFromOid);
-    let isWhitelisted = false;
-    settingsStrings.forEach(str => {
-      if (!str) return;
-      const normWhite = normalize(str);
-      const match = normError === normWhite || normError.includes(normWhite) || normWhite.includes(normError);
-      console.log(
-        `\n---\nRAW feilkode: '${printer.feilkodeFromOid}'\nRAW whitelist: '${str}'\nNORMALIZED feilkode: '${normError}'\nNORMALIZED whitelist: '${normWhite}'\nMatch:`,
-        match
-      );
-      if (match) isWhitelisted = true;
+
+  const errorPrinters = useMemo(() => {
+    const printersWithFeilkode = printers
+      .map(printer => ({ ...printer, feilkodeFromOid: getFeilkodeFromOids(printer) }))
+      .filter(printer => printer.feilkodeFromOid && printer.feilkodeFromOid.trim() !== "");
+    console.log("printersWithFeilkode", printersWithFeilkode);
+    const filtered = printersWithFeilkode.filter((printer) => {
+      const normError = normalize(printer.feilkodeFromOid);
+      let isWhitelisted = false;
+      settingsStrings.forEach(str => {
+        if (!str) return;
+        const normWhite = normalize(str);
+        const match = normError === normWhite || normError.includes(normWhite) || normWhite.includes(normError);
+        console.log(
+          `\n---\nRAW feilkode: '${printer.feilkodeFromOid}'\nRAW whitelist: '${str}'\nNORMALIZED feilkode: '${normError}'\nNORMALIZED whitelist: '${normWhite}'\nMatch:`,
+          match
+        );
+        if (match) isWhitelisted = true;
+      });
+      return !isWhitelisted;
     });
-    return !isWhitelisted;
-  });
-  console.log("errorPrinters", errorPrinters);
+    console.log("errorPrinters", filtered);
+    return filtered;
+  }, [printers, settingsStrings]);
 
   return (
     <div className="flex flex-row justify-center gap-0">
