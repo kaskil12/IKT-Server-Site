@@ -3,10 +3,16 @@ const cors = require('cors');
 const snmp = require('net-snmp');
 const http = require('http');
 const socketio = require('socket.io');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3001',
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 const port = 3000;
 const server = http.createServer(app);
@@ -16,6 +22,24 @@ const io = socketio(server, {
     methods: ['GET', 'POST']
   }
 });
+
+const JWT_SECRET = 'your-secret-key-change-this-in-production';
+
+const authenticateToken = (req, res, next) => {
+  const token = req.cookies.authToken;
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+    req.user = user;
+    next();
+  });
+};
 
 
 const sequelizeDB = require("./database.js");
@@ -92,13 +116,50 @@ app.post('/users/login', async (req, res) => {
   try {
     const user = await Users.findOne({ where: { username, password } });
     if (user) {
-      res.json({ success: true });
+      const token = jwt.sign(
+        { id: user.id, username: user.username },
+        JWT_SECRET,
+        { expiresIn: '365d' } 
+      );
+      
+      res.cookie('authToken', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 365 * 24 * 60 * 60 * 1000 
+      });
+      
+      res.json({ success: true, user: { id: user.id, username: user.username } });
     } else {
       res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+app.post('/users/logout', (req, res) => {
+  res.clearCookie('authToken');
+  res.json({ success: true, message: 'Logged out successfully' });
+});
+
+app.get('/users/me', authenticateToken, (req, res) => {
+  res.json({ success: true, user: req.user });
+});
+
+app.get('/users/check-auth', (req, res) => {
+  const token = req.cookies.authToken;
+  
+  if (!token) {
+    return res.json({ authenticated: false });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.json({ authenticated: false });
+    }
+    res.json({ authenticated: true, user: { id: user.id, username: user.username } });
+  });
 });
 
 

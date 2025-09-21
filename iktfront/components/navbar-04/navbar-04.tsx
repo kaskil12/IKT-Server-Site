@@ -4,8 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "./logo";
 import { NavMenu } from "./nav-menu";
 import { NavigationSheet } from "./navigation-sheet";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar04Page = () => {
+  const { isAuthenticated, user, logout, isLoading } = useAuth();
+
+  const handleAuthAction = () => {
+    if (isAuthenticated) {
+      logout();
+    } else {
+      window.location.href = '/login';
+    }
+  };
+
   return (
     <div className="mb-30">
       <nav className="fixed top-6 inset-x-4 h-16 max-w-screen-xl mx-auto rounded-full bg-white/10 backdrop-blur-md shadow-md z-50">
@@ -18,14 +29,22 @@ const Navbar04Page = () => {
           <NavMenu className="hidden md:block" />
 
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              className="hidden sm:inline-flex rounded-full cursor-pointer"
-              onClick={() => window.location.href = '/login'}
-            >
-              Sign In
-            </Button>
-            {/* <Button className="rounded-full">Get Started</Button> */}
+            {!isLoading && (
+              <>
+                {isAuthenticated && user && (
+                  <span className="hidden sm:inline text-white text-sm">
+                    Velkommen, {user.username}
+                  </span>
+                )}
+                <Button
+                  variant="outline"
+                  className="hidden sm:inline-flex rounded-full cursor-pointer"
+                  onClick={handleAuthAction}
+                >
+                  {isAuthenticated ? 'Log ut' : 'Log in'}
+                </Button>
+              </>
+            )}
 
             {/* Mobile Menu */}
             <div className="md:hidden">

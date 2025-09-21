@@ -1,13 +1,23 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const router = useRouter();
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,24 +25,12 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        
-        window.location.href = '/';
+      const success = await login(username, password);
+      
+      if (success) {
+        router.push('/');
       } else {
-        setError(data.error || 'Login failed');
+        setError('Invalid credentials');
       }
     } catch (error) {
       setError('Network error. Please try again.');
@@ -40,6 +38,18 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     

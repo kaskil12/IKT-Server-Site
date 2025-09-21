@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 import {
   ChartLineLabel,
@@ -52,8 +53,8 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const [printerRes, settingsRes] = await Promise.all([
-          fetch("http://localhost:3000/getAll"),
-          fetch("http://localhost:3000/settings")
+          fetch("http://localhost:3000/getAll", { credentials: 'include' }),
+          fetch("http://localhost:3000/settings", { credentials: 'include' })
         ]);
         const printers = await printerRes.json();
         const settings = await settingsRes.json();
@@ -150,60 +151,62 @@ export default function Home() {
   }, [printers, settingsStrings]);
 
   return (
-    <div className="flex flex-row justify-center gap-0">
-      <div className="w-5xl h-screen flex-initial items-center justify-center gap-6 p-6 text-white">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px] text-white font-bold">Dato</TableHead>
-              <TableHead className="text-white font-bold">Status</TableHead>
-              <TableHead className="text-white font-bold">Tittel</TableHead>
-              <TableHead className="text-right text-white font-bold">Navn</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tableData.map((row, index) => (
-              <TableRow key={index}>
-                <TableCell className="font-medium">{row.dato}</TableCell>
-                <TableCell>{row.status}</TableCell>
-                <TableCell>{row.tittel}</TableCell>
-                <TableCell className="text-right">{row.navn}</TableCell>
+    <ProtectedRoute>
+      <div className="flex flex-row justify-center gap-0">
+        <div className="w-5xl h-screen flex-initial items-center justify-center gap-6 p-6 text-white">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px] text-white font-bold">Dato</TableHead>
+                <TableHead className="text-white font-bold">Status</TableHead>
+                <TableHead className="text-white font-bold">Tittel</TableHead>
+                <TableHead className="text-right text-white font-bold">Navn</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {/* {errorPrinters.length > 0 && (
-          <div className="mt-8 p-4 bg-red-900/80 rounded-xl shadow-lg">
-            <h2 className="text-lg font-bold text-red-300 mb-2">Printere med feil (ikke whitelisted):</h2>
-            <ul className="space-y-2">
-              {errorPrinters.map((printer) => (
-                <li key={printer.id} className="flex flex-col gap-1">
-                  <span className="font-semibold">{printer.modell} ({printer.PrinterIP})</span>
-                  <span className="text-red-200">Feilkode: {printer.feilkode}</span>
-                  <span className="text-xs text-gray-300">Plassering: {printer.plassering}</span>
-                </li>
+            </TableHeader>
+            <TableBody>
+              {tableData.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{row.dato}</TableCell>
+                  <TableCell>{row.status}</TableCell>
+                  <TableCell>{row.tittel}</TableCell>
+                  <TableCell className="text-right">{row.navn}</TableCell>
+                </TableRow>
               ))}
-            </ul>
-          </div>
-        )} */}
+            </TableBody>
+          </Table>
+
+          {/* {errorPrinters.length > 0 && (
+            <div className="mt-8 p-4 bg-red-900/80 rounded-xl shadow-lg">
+              <h2 className="text-lg font-bold text-red-300 mb-2">Printere med feil (ikke whitelisted):</h2>
+              <ul className="space-y-2">
+                {errorPrinters.map((printer) => (
+                  <li key={printer.id} className="flex flex-col gap-1">
+                    <span className="font-semibold">{printer.modell} ({printer.PrinterIP})</span>
+                    <span className="text-red-200">Feilkode: {printer.feilkode}</span>
+                    <span className="text-xs text-gray-300">Plassering: {printer.plassering}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )} */}
+        </div>
+        <div className="w-3xl h-3xl flex-initial gap-6 p-6 flex flex-col">
+          <ChartLineLabel cardTitle="Nettverkstrafikk" cardDescription="Siste 30 dager" trendingText="+5% siden forrige måned" footerText="Oppetid 99.99%"
+          chartData={[{ month: "January", antall: 186 },
+            { month: "February", antall: 305 },
+            { month: "March", antall: 237 },
+            { month: "April", antall: 73 },
+            { month: "May", antall: 209 },
+            { month: "June", antall: 214}]} />
+          <DeviceBox
+            devices={errorPrinters.map(printer => ({
+              name: printer.modell + ' (' + printer.PrinterIP + ')',
+              error: printer.feilkodeFromOid,
+              location: printer.plassering
+            }))}
+          />
+        </div>
       </div>
-      <div className="w-3xl h-3xl flex-initial gap-6 p-6 flex flex-col">
-        <ChartLineLabel cardTitle="Nettverkstrafikk" cardDescription="Siste 30 dager" trendingText="+5% siden forrige måned" footerText="Oppetid 99.99%"
-        chartData={[{ month: "January", antall: 186 },
-          { month: "February", antall: 305 },
-          { month: "March", antall: 237 },
-          { month: "April", antall: 73 },
-          { month: "May", antall: 209 },
-          { month: "June", antall: 214}]} />
-        <DeviceBox
-          devices={errorPrinters.map(printer => ({
-            name: printer.modell + ' (' + printer.PrinterIP + ')',
-            error: printer.feilkodeFromOid,
-            location: printer.plassering
-          }))}
-        />
-      </div>
-    </div>
+    </ProtectedRoute>
   );
 }

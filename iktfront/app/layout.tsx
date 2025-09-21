@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar04Page from "@/components/navbar-04/navbar-04";
 import Footer from "@/components/Footer/Footer";
-import { CookiesProvider, useCookies } from 'react-cookie'
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,18 +27,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      {/* <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen bg-gradient-to-br from-green-700 to-teal-900`}
-      ></body> */}
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gradient-to-br from-green-700 to-teal-900`}
       >
-        <header>
-          <Navbar04Page/>
-        </header>
-        
-        {children}
-        <Footer/>
+        <AuthProvider>
+          <header>
+            <Navbar04Page/>
+          </header>
+          
+          {children}
+          <Footer/>
+        </AuthProvider>
       </body>
     </html>
   );
