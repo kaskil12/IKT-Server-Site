@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Logo } from "./logo";
 import { NavMenu } from "./nav-menu";
@@ -6,7 +8,7 @@ import { NavigationSheet } from "./navigation-sheet";
 const Navbar04Page = () => {
   return (
     <div className="mb-30">
-      <nav className="fixed top-6 inset-x-4 h-16 max-w-screen-xl mx-auto rounded-full bg-white/10 backdrop-blur-md shadow-md">
+      <nav className="fixed top-6 inset-x-4 h-16 max-w-screen-xl mx-auto rounded-full bg-white/10 backdrop-blur-md shadow-md z-50">
         <div className="h-full flex items-center justify-between mx-auto px-4 ">
           <div className="flex items-center gap-3">
             <img src="/logo.png" width={32} height={32} />
@@ -19,6 +21,7 @@ const Navbar04Page = () => {
             <Button
               variant="outline"
               className="hidden sm:inline-flex rounded-full cursor-pointer"
+              onClick={() => window.location.href = '/login'}
             >
               Sign In
             </Button>

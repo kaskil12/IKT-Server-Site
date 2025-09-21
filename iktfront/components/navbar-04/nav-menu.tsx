@@ -22,12 +22,12 @@ export const NavMenu = (props: NavigationMenuProps) => (
       </NavigationMenuItem>
       <NavigationMenuItem>
         <NavigationMenuLink asChild>
-          <Link href="#">Switcher</Link>
+          <Link href="/switcher">Switcher</Link>
         </NavigationMenuLink>
       </NavigationMenuItem>
       <NavigationMenuItem>
         <NavigationMenuLink asChild>
-          <Link href="#">AP</Link>
+          <Link href="/aksespunkt">Aksespunkt</Link>
         </NavigationMenuLink>
       </NavigationMenuItem>
     </NavigationMenuList>

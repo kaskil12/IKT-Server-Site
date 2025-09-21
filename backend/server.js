@@ -18,18 +18,33 @@ const io = socketio(server, {
 });
 
 
-
-
 const sequelizeDB = require("./database.js");
 const Printer = require("./models/Printer.js");
 const SettingString = require("./models/SettingString.js");
+const Users = require("./models/Users.js");
 Printer.init(sequelizeDB);
 SettingString.init(sequelizeDB);
+Users.init(sequelizeDB);
 
 Promise.all([
   Printer.sync(),
-  SettingString.sync()
-]).then(() => {
+  SettingString.sync(),
+  Users.sync()
+]).then(async () => {
+  try {
+    const [adminUser, created] = await Users.findOrCreate({
+      where: { username: 'admin' },
+      defaults: { username: 'admin', password: 'admin123' }
+    });
+    if (created) {
+      console.log('Default admin user created with username: admin, password: admin123');
+    } else {
+      console.log('Admin user already exists');
+    }
+  } catch (error) {
+    console.error('Error creating admin user:', error);
+  }
+
   updatePrintersStatus();
   setInterval(updatePrintersStatus, 3 * 60 * 1000);
 
@@ -46,6 +61,47 @@ app.get('/settings', async (req, res) => {
     res.status(500).json([]);
   }
 });
+
+app.post('/users/add', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || typeof username !== 'string' || !password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Missing username or password' });
+  }
+  try {
+    const [user, created] = await Users.findOrCreate({ where: { username, password } });
+    res.json({ username: user.username, created });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/users/all', async (req, res) => {
+  try {
+    const users = await Users.findAll();
+    res.json(users.map(u => u.username));
+  } catch (e) {
+    res.status(500).json([]);
+  }
+});
+
+app.post('/users/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || typeof username !== 'string' || !password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Missing username or password' });
+  }
+  try {
+    const user = await Users.findOne({ where: { username, password } });
+    if (user) {
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
 
 app.post('/settings/add', async (req, res) => {
   const { value } = req.body;
