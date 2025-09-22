@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users/check-auth', {
+      const response = await fetch('http://10.230.64.44:3000/users/check-auth', {
         credentials: 'include'
       });
       const data = await response.json();
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://localhost:3000/users/login', {
+      const response = await fetch('http://10.230.64.44:3000/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('http://localhost:3000/users/logout', {
+      await fetch('http://10.230.64.44:3000/users/logout', {
         method: 'POST',
         credentials: 'include'
       });

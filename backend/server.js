@@ -24,7 +24,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 app.use(cors({
-  origin: 'http://localhost:3001',
+  origin: 'http://10.230.64.44:3000',
   credentials: true
 }));
 app.use(express.json());
@@ -79,7 +79,7 @@ Promise.all([
   updatePrintersStatus();
   setInterval(updatePrintersStatus, 3 * 60 * 1000);
 
-  server.listen(port, () => {
+  server.listen(port, "3000", () => {
     console.log(`Express app listening at http://localhost:${port}`);
   });
 });

@@ -457,7 +457,7 @@
           "lib/net5.0/MicroCom.Runtime.dll": {}
         }
       },
-      "Microsoft.NET.ILLink.Tasks/9.0.6": {
+      "Microsoft.NET.ILLink.Tasks/9.0.4": {
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
@@ -1235,10 +1235,10 @@
         "microcom.runtime.nuspec"
       ]
     },
-    "Microsoft.NET.ILLink.Tasks/9.0.6": {
-      "sha512": "TXy3SbJzGXQbxxIxCjdrp8bwEyTDImyYNpTpd6v7P3JL2Y7dno8EYG7dPezfYTa5SoWKdhbH9cbnwHHs3BR5gA==",
+    "Microsoft.NET.ILLink.Tasks/9.0.4": {
+      "sha512": "xUdlUxiFwXhTYhB4VxKg/IA0+jlZXJPo70LYuMryWbJHdonIpZjw+7DO2B0pWwpXIOs6MlH5WVXPEtfrGEcVZA==",
       "type": "package",
-      "path": "microsoft.net.illink.tasks/9.0.6",
+      "path": "microsoft.net.illink.tasks/9.0.4",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
@@ -1252,7 +1252,7 @@
         "build/Microsoft.NET.ILLink.Analyzers.props",
         "build/Microsoft.NET.ILLink.Tasks.props",
         "build/Microsoft.NET.ILLink.targets",
-        "microsoft.net.illink.tasks.9.0.6.nupkg.sha512",
+        "microsoft.net.illink.tasks.9.0.4.nupkg.sha512",
         "microsoft.net.illink.tasks.nuspec",
         "tools/net472/ILLink.Tasks.dll",
         "tools/net472/ILLink.Tasks.dll.config",
@@ -1517,7 +1517,7 @@
       "Avalonia.Fonts.Inter >= 11.2.6",
       "Avalonia.Themes.Fluent >= 11.2.6",
       "Lextm.SharpSnmpLib >= 12.5.6",
-      "Microsoft.NET.ILLink.Tasks >= 9.0.6"
+      "Microsoft.NET.ILLink.Tasks >= 9.0.4"
     ]
   },
   "packageFolders": {
@@ -1527,25 +1527,23 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\kasper\\OneDrive - Innlandet fylkeskommune\\Dokumenter\\GitHub\\IKT-Server-Site\\snmpIKT\\IKTPrinter\\IKTPrinter.csproj",
+      "projectUniqueName": "C:\\Users\\kasper\\Documents\\GitHub\\IKT-Server-Site\\snmpIKT\\IKTPrinter\\IKTPrinter.csproj",
       "projectName": "IKTPrinter",
-      "projectPath": "C:\\Users\\kasper\\OneDrive - Innlandet fylkeskommune\\Dokumenter\\GitHub\\IKT-Server-Site\\snmpIKT\\IKTPrinter\\IKTPrinter.csproj",
+      "projectPath": "C:\\Users\\kasper\\Documents\\GitHub\\IKT-Server-Site\\snmpIKT\\IKTPrinter\\IKTPrinter.csproj",
       "packagesPath": "C:\\Users\\kasper\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\kasper\\OneDrive - Innlandet fylkeskommune\\Dokumenter\\GitHub\\IKT-Server-Site\\snmpIKT\\IKTPrinter\\obj\\",
+      "outputPath": "C:\\Users\\kasper\\Documents\\GitHub\\IKT-Server-Site\\snmpIKT\\IKTPrinter\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
         "C:\\Users\\kasper\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -1564,7 +1562,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -1597,7 +1595,7 @@
           "Microsoft.NET.ILLink.Tasks": {
             "suppressParent": "All",
             "target": "Package",
-            "version": "[9.0.6, )",
+            "version": "[9.0.4, )",
             "autoReferenced": true
           }
         },
@@ -1617,7 +1615,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
