@@ -256,10 +256,10 @@ export default function Printer() {
         <ProtectedRoute>
         <div className="flex flex-col min-h-screen p-6 text-white">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Printer Management</h1>
+                <h1 className="text-2xl font-bold">Printer Oversikt</h1>
                 <div className="flex gap-2">
-                    <Button className="bg-green-700" onClick={() => setOpenSettings(true)}>Settings</Button>
-                    <Button className="bg-green-700" onClick={() => setOpen(true)}>Add Printer</Button>
+                    <Button className="bg-green-700" onClick={() => setOpenSettings(true)}>Innstillinger</Button>
+                    <Button className="bg-green-700" onClick={() => setOpen(true)}>Legg til Printer</Button>
                 </div>
             </div>
         

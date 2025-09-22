@@ -38,12 +38,99 @@ const io = socketio(server, {
     methods: ['GET', 'POST']
   }
 });
+const sequelizeDB = require("./database.js");
+const Printer = require("./models/Printer.js");
+const SettingString = require("./models/SettingString.js");
+const Users = require("./models/Users.js");
+const Switcher = require('./models/Switcher.js');
+Printer.init(sequelizeDB);
+SettingString.init(sequelizeDB);
+Users.init(sequelizeDB);
+Switcher.init(sequelizeDB);
+
+
+Promise.all([
+  Printer.sync(),
+  SettingString.sync(),
+  Users.sync(),
+  Switcher.sync()
+]).then(async () => {
+  try {
+    const userCount = await Users.count();
+    const [adminUser, created] = await Users.findOrCreate({
+      where: { username: 'admin' },
+      defaults: { username: 'admin', password: 'admin123', isAdmin: true }
+    });
+    if (created) {
+      console.log('Default admin user created with username: admin, password: admin123');
+    } else {
+      if (!adminUser.isAdmin) {
+        adminUser.isAdmin = true;
+        await adminUser.save();
+        console.log('Admin user updated to isAdmin: true');
+      } else {
+        console.log('Admin user already exists');
+      }
+    }
+  } catch (error) {
+    console.error('Error creating admin user:', error);
+  }
+
+  updatePrintersStatus();
+  setInterval(updatePrintersStatus, 3 * 60 * 1000);
+
+  server.listen(port, () => {
+    console.log(`Express app listening at http://localhost:${port}`);
+  });
+});
+
 function requireAdmin(req, res, next) {
   if (!req.user || !req.user.isAdmin) {
     return res.status(403).json({ error: 'Admin access required' });
   }
   next();
 }
+app.post('switcher/add', authenticateToken, requireAdmin, async (req, res) => {
+  const { name, ip, model, location, status } = req.body;
+
+  try {
+    const switcher = await Switcher.create({ name, ip, model, location, status });
+    res.status(201).json(switcher);
+  } catch (error) {
+    console.error('Error adding switcher:', error);
+    res.status(500).json({ error: 'Failed to add switcher' });
+  }
+});
+app.get('/switcher/all', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const switchers = await Switcher.findAll();
+    res.json(switchers);
+  } catch (error) {
+    console.error('Error fetching switchers:', error);
+    res.status(500).json({ error: 'Failed to fetch switchers' });
+  }
+});
+app.post('/switcher/update/:id', authenticateToken, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { name, ip, model, location, status } = req.body;
+
+  try {
+    const switcher = await Switcher.findByPk(id);
+    if (!switcher) {
+      return res.status(404).json({ error: 'Switcher not found' });
+    }
+    switcher.name = name;
+    switcher.ip = ip;
+    switcher.model = model;
+    switcher.location = location;
+    switcher.status = status;
+    await switcher.save();
+    res.json(switcher);
+  } catch (error) {
+    console.error('Error updating switcher:', error);
+    res.status(500).json({ error: 'Failed to update switcher' });
+  }
+});
 
 app.get('/admin/users', authenticateToken, requireAdmin, async (req, res) => {
   try {
@@ -105,48 +192,7 @@ app.delete('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
 
 
 
-const sequelizeDB = require("./database.js");
-const Printer = require("./models/Printer.js");
-const SettingString = require("./models/SettingString.js");
-const Users = require("./models/Users.js");
-Printer.init(sequelizeDB);
-SettingString.init(sequelizeDB);
-Users.init(sequelizeDB);
 
-
-Promise.all([
-  Printer.sync(),
-  SettingString.sync(),
-  Users.sync()
-]).then(async () => {
-  try {
-    const userCount = await Users.count();
-    const [adminUser, created] = await Users.findOrCreate({
-      where: { username: 'admin' },
-      defaults: { username: 'admin', password: 'admin123', isAdmin: true }
-    });
-    if (created) {
-      console.log('Default admin user created with username: admin, password: admin123');
-    } else {
-      if (!adminUser.isAdmin) {
-        adminUser.isAdmin = true;
-        await adminUser.save();
-        console.log('Admin user updated to isAdmin: true');
-      } else {
-        console.log('Admin user already exists');
-      }
-    }
-  } catch (error) {
-    console.error('Error creating admin user:', error);
-  }
-
-  updatePrintersStatus();
-  setInterval(updatePrintersStatus, 3 * 60 * 1000);
-
-  server.listen(port, () => {
-    console.log(`Express app listening at http://localhost:${port}`);
-  });
-});
 
 app.get('/settings', async (req, res) => {
   try {
