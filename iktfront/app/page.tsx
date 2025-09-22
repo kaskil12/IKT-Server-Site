@@ -196,8 +196,8 @@ export default function Home() {
             { month: "February", antall: 305 },
             { month: "March", antall: 237 },
             { month: "April", antall: 73 },
-            { month: "May", antall: 209 },
-            { month: "June", antall: 214}]} />
+            { month: "Mai", antall: 209 },
+            { month: "Juni", antall: 214}]} />
           <DeviceBox
             devices={errorPrinters.map(printer => ({
               name: printer.modell + ' (' + printer.PrinterIP + ')',

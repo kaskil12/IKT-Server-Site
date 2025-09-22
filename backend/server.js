@@ -6,7 +6,23 @@ const socketio = require('socket.io');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const app = express();
+const JWT_SECRET = 'your-secret-key-change-this-in-production';
 
+const authenticateToken = (req, res, next) => {
+  const token = req.cookies.authToken;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+    req.user = user;
+    next();
+  });
+};
 app.use(cors({
   origin: 'http://localhost:3001',
   credentials: true
@@ -22,24 +38,71 @@ const io = socketio(server, {
     methods: ['GET', 'POST']
   }
 });
-
-const JWT_SECRET = 'your-secret-key-change-this-in-production';
-
-const authenticateToken = (req, res, next) => {
-  const token = req.cookies.authToken;
-  
-  if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
+function requireAdmin(req, res, next) {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ error: 'Admin access required' });
   }
+  next();
+}
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ error: 'Invalid or expired token' });
+app.get('/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const users = await Users.findAll({ attributes: ['id', 'username', 'isAdmin'] });
+    res.json(users);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+  const { username, password, isAdmin } = req.body;
+  if (!username || typeof username !== 'string' || !password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Missing username or password' });
+  }
+  try {
+    const [user, created] = await Users.findOrCreate({
+      where: { username },
+      defaults: { password, isAdmin: !!isAdmin }
+    });
+    if (!created) {
+      return res.status(409).json({ error: 'User already exists' });
     }
-    req.user = user;
-    next();
-  });
-};
+    res.json({ id: user.id, username: user.username, isAdmin: user.isAdmin });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { username, password, isAdmin } = req.body;
+  try {
+    const user = await Users.findByPk(id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (username) user.username = username;
+    if (typeof password === 'string' && password.length > 0) user.password = password;
+    if (typeof isAdmin === 'boolean') user.isAdmin = isAdmin;
+    await user.save();
+    res.json({ id: user.id, username: user.username, isAdmin: user.isAdmin });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/admin/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await Users.findByPk(id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    await user.destroy();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
+
 
 
 const sequelizeDB = require("./database.js");
@@ -50,20 +113,28 @@ Printer.init(sequelizeDB);
 SettingString.init(sequelizeDB);
 Users.init(sequelizeDB);
 
+
 Promise.all([
   Printer.sync(),
   SettingString.sync(),
   Users.sync()
 ]).then(async () => {
   try {
+    const userCount = await Users.count();
     const [adminUser, created] = await Users.findOrCreate({
       where: { username: 'admin' },
-      defaults: { username: 'admin', password: 'admin123' }
+      defaults: { username: 'admin', password: 'admin123', isAdmin: true }
     });
     if (created) {
       console.log('Default admin user created with username: admin, password: admin123');
     } else {
-      console.log('Admin user already exists');
+      if (!adminUser.isAdmin) {
+        adminUser.isAdmin = true;
+        await adminUser.save();
+        console.log('Admin user updated to isAdmin: true');
+      } else {
+        console.log('Admin user already exists');
+      }
     }
   } catch (error) {
     console.error('Error creating admin user:', error);
@@ -92,8 +163,12 @@ app.post('/users/add', async (req, res) => {
     return res.status(400).json({ error: 'Missing username or password' });
   }
   try {
-    const [user, created] = await Users.findOrCreate({ where: { username, password } });
-    res.json({ username: user.username, created });
+    const userCount = await Users.count();
+    const [user, created] = await Users.findOrCreate({
+      where: { username },
+      defaults: { password, isAdmin: userCount === 0 }
+    });
+    res.json({ username: user.username, isAdmin: user.isAdmin, created });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -117,19 +192,17 @@ app.post('/users/login', async (req, res) => {
     const user = await Users.findOne({ where: { username, password } });
     if (user) {
       const token = jwt.sign(
-        { id: user.id, username: user.username },
+        { id: user.id, username: user.username, isAdmin: user.isAdmin },
         JWT_SECRET,
-        { expiresIn: '365d' } 
+        { expiresIn: '365d' }
       );
-      
       res.cookie('authToken', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 365 * 24 * 60 * 60 * 1000 
+        maxAge: 365 * 24 * 60 * 60 * 1000
       });
-      
-      res.json({ success: true, user: { id: user.id, username: user.username } });
+      res.json({ success: true, user: { id: user.id, username: user.username, isAdmin: user.isAdmin } });
     } else {
       res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
@@ -149,7 +222,7 @@ app.get('/users/me', authenticateToken, (req, res) => {
 
 app.get('/users/check-auth', (req, res) => {
   const token = req.cookies.authToken;
-  
+
   if (!token) {
     return res.json({ authenticated: false });
   }
@@ -158,7 +231,7 @@ app.get('/users/check-auth', (req, res) => {
     if (err) {
       return res.json({ authenticated: false });
     }
-    res.json({ authenticated: true, user: { id: user.id, username: user.username } });
+    res.json({ authenticated: true, user: { id: user.id, username: user.username, isAdmin: user.isAdmin } });
   });
 });
 

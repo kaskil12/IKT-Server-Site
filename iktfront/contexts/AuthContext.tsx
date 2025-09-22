@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation';
 interface User {
   id: number;
   username: string;
+  isAdmin?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
@@ -90,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     isAuthenticated: !!user,
+    isAdmin: user?.isAdmin ?? false,
     isLoading,
     login,
     logout,

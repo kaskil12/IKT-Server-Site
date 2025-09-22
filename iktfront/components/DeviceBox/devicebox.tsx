@@ -21,12 +21,12 @@ interface DeviceTableProps {
 export default function DeviceBox({ devices }: DeviceTableProps) {
   return (
     <Table className="w-full max-w-3xl rounded-2xl shadow-md text-white ">
-      <TableCaption className="text-white">A list of monitored devices</TableCaption>
+      <TableCaption className="text-white">Liste av overvåkede enheter</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[200px] text-white">Device</TableHead>
-          <TableHead className="text-white">Error</TableHead>
-          <TableHead className="text-right text-white">Location</TableHead>
+          <TableHead className="w-[200px] text-white">Enhet</TableHead>
+          <TableHead className="text-white">Feil</TableHead>
+          <TableHead className="text-right text-white">Plassering</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

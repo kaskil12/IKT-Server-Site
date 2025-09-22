@@ -21,6 +21,7 @@ import { PiGlobeSimpleBold } from "react-icons/pi";
 import { PiGlobeSimpleXBold } from "react-icons/pi";
 import { FaEdit } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
+import ProtectedRoute from "@/components/ProtectedRoute";
 interface OID {
     name: string;
     oid: string;
@@ -252,6 +253,7 @@ export default function Printer() {
     };
 
     return (
+        <ProtectedRoute>
         <div className="flex flex-col min-h-screen p-6 text-white">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Printer Management</h1>
@@ -591,6 +593,7 @@ export default function Printer() {
                     </div>
                 )}
                 </div>
+                </ProtectedRoute>
         );
     }
 

@@ -10,8 +10,12 @@ module.exports = class Users extends Model {
             },
             password: {
                 type: DataTypes.STRING,
-                unique: true,
                 allowNull: false
+            },
+            isAdmin: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
             }
         }, {
             tableName: "Users",
