@@ -10,7 +10,7 @@ export default function Switcher(){
     ];
     const addSwitcher = () => {
         try {
-            fetch("http://10.230.64.44:3000/switchers", {
+            fetch("http://10.230.64.30:3000/switchers", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

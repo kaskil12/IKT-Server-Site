@@ -24,7 +24,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 app.use(cors({
-  origin: 'http://10.230.64.44:3000',
+  origin: 'http://10.230.64.30:3000',
   credentials: true
 }));
 app.use(express.json());

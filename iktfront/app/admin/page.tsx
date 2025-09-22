@@ -24,7 +24,7 @@
          setLoading(true);
          setError("");
          try {
-             const res = await fetch("http://10.230.64.44:3000/admin/users", { credentials: "include" });
+             const res = await fetch("http://10.230.64.30:3000/admin/users", { credentials: "include" });
              if (!res.ok) throw new Error("Failed to fetch users");
              const data = await res.json();
              setUsers(data);
@@ -47,7 +47,7 @@
          try {
              if (editId) {
                  // Edit user
-                 const res = await fetch(`http://10.230.64.44:3000/admin/users/${editId}`, {
+                 const res = await fetch(`http://10.230.64.30:3000/admin/users/${editId}`, {
                      method: "PUT",
                      headers: { "Content-Type": "application/json" },
                      credentials: "include",
@@ -56,7 +56,7 @@
                  if (!res.ok) throw new Error("Failed to update user");
              } else {
                  // Add user
-                 const res = await fetch("http://10.230.64.44:3000/admin/users", {
+                 const res = await fetch("http://10.230.64.30:3000/admin/users", {
                      method: "POST",
                      headers: { "Content-Type": "application/json" },
                      credentials: "include",
@@ -82,7 +82,7 @@
          if (!window.confirm("Are you sure you want to delete this user?")) return;
          setError("");
          try {
-             const res = await fetch(`http://10.230.64.44:3000/admin/users/${id}`, {
+             const res = await fetch(`http://10.230.64.30:3000/admin/users/${id}`, {
                  method: "DELETE",
                  credentials: "include",
              });

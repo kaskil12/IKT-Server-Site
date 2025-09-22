@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 const fetchSettingsStrings = async () => {
     try {
-        const response = await fetch("http://10.230.64.44:3000/settings");
+        const response = await fetch("http://10.230.64.30:3000/settings");
         if (!response.ok) throw new Error("Failed to fetch settings");
         return await response.json();
     } catch (e) {
@@ -68,7 +68,7 @@ export default function Printer() {
         if (!newSetting.trim()) return;
         setAddingSetting(true);
         try {
-            const res = await fetch("http://10.230.64.44:3000/settings/add", {
+            const res = await fetch("http://10.230.64.30:3000/settings/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ value: newSetting.trim() })
@@ -82,7 +82,7 @@ export default function Printer() {
     };
     const handleDeleteSettingString = async (str: string) => {
         try {
-            const res = await fetch("http://10.230.64.44:3000/settings/delete", {
+            const res = await fetch("http://10.230.64.30:3000/settings/delete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ value: str })
@@ -95,7 +95,7 @@ export default function Printer() {
 
     const fetchPrinters = async () => {
         try {
-            const response = await fetch("http://10.230.64.44:3000/getAll");
+            const response = await fetch("http://10.230.64.30:3000/getAll");
             const data = await response.json();
             setPrinters(data);
             setLoading(false);
@@ -112,7 +112,7 @@ export default function Printer() {
 
         const interval = setInterval(fetchPrinters, 5 * 60 * 1000);
 
-        const socket = io("http://10.230.64.44:3000");
+        const socket = io("http://10.230.64.30:3000");
         socket.on("printersUpdated", (data: Printer[]) => {
             setPrinters(data);
             setLoading(false);
@@ -138,7 +138,7 @@ export default function Printer() {
             return;
         }
         try {
-            await fetch("http://10.230.64.44:3000/add", {
+            await fetch("http://10.230.64.30:3000/add", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -180,7 +180,7 @@ export default function Printer() {
     const handleEditPrinter = async () => {
         if (editId === null) return;
         try {
-            await fetch("http://10.230.64.44:3000/update", {
+            await fetch("http://10.230.64.30:3000/update", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -216,7 +216,7 @@ export default function Printer() {
 
     const handleDeletePrinter = async (id: number) => {
         try {
-            await fetch("http://10.230.64.44:3000/delete", {
+            await fetch("http://10.230.64.30:3000/delete", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
