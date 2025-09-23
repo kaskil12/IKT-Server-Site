@@ -52,9 +52,10 @@ export default function Home() {
     let socket: any = null;
     const fetchData = async () => {
       try {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
         const [printerRes, settingsRes] = await Promise.all([
-          fetch("http://10.230.64.30:3000/getAll", { credentials: 'include' }),
-          fetch("http://10.230.64.30:3000/settings", { credentials: 'include' })
+          fetch(`${backendUrl}/getAll`, { credentials: 'include' }),
+          fetch(`${backendUrl}/settings`, { credentials: 'include' })
         ]);
         const printers = await printerRes.json();
         const settings = await settingsRes.json();
@@ -71,7 +72,8 @@ export default function Home() {
 
 
     const io = require("socket.io-client");
-    socket = io("http://10.230.64.30:3000");
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  socket = io(backendUrl);
     socket.on("printersUpdated", (data: Printer[]) => {
       setPrinters(data);
       setLoading(false);

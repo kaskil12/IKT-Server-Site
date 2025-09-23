@@ -23,16 +23,18 @@
      const fetchUsers = async () => {
          setLoading(true);
          setError("");
-         try {
-             const res = await fetch("http://10.230.64.30:3000/admin/users", { credentials: "include" });
-             if (!res.ok) throw new Error("Failed to fetch users");
-             const data = await res.json();
-             setUsers(data);
-         } catch (e: any) {
-             setError(e.message || "Unknown error");
-         } finally {
-             setLoading(false);
-         }
+        try {
+            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+            if (!backendUrl) throw new Error("NEXT_PUBLIC_BACKEND_URL is not set in the environment variables.");
+            const res = await fetch(`${backendUrl}/admin/users`, { credentials: "include" });
+            if (!res.ok) throw new Error("Failed to fetch users");
+            const data = await res.json();
+            setUsers(data);
+        } catch (e: any) {
+            setError(e.message || "Unknown error");
+        } finally {
+            setLoading(false);
+        }
      };
 
      useEffect(() => {
@@ -44,53 +46,57 @@
          e.preventDefault();
          setAdding(true);
          setError("");
-         try {
-             if (editId) {
-                 // Edit user
-                 const res = await fetch(`http://10.230.64.30:3000/admin/users/${editId}`, {
-                     method: "PUT",
-                     headers: { "Content-Type": "application/json" },
-                     credentials: "include",
-                     body: JSON.stringify(form),
-                 });
-                 if (!res.ok) throw new Error("Failed to update user");
-             } else {
-                 // Add user
-                 const res = await fetch("http://10.230.64.30:3000/admin/users", {
-                     method: "POST",
-                     headers: { "Content-Type": "application/json" },
-                     credentials: "include",
-                     body: JSON.stringify(form),
-                 });
-                 if (!res.ok) {
-                     const data = await res.json();
-                     throw new Error(data.error || "Failed to add user");
-                 }
-             }
-             setForm({ username: "", password: "", isAdmin: false });
-             setEditId(null);
-             fetchUsers();
-         } catch (e: any) {
-             setError(e.message || "Unknown error");
-         } finally {
-             setAdding(false);
-         }
+        try {
+            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+            if (!backendUrl) throw new Error("NEXT_PUBLIC_BACKEND_URL is not set in the environment variables.");
+            if (editId) {
+                // Edit user
+                const res = await fetch(`${backendUrl}/admin/users/${editId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify(form),
+                });
+                if (!res.ok) throw new Error("Failed to update user");
+            } else {
+                // Add user
+                const res = await fetch(`${backendUrl}/admin/users`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify(form),
+                });
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || "Failed to add user");
+                }
+            }
+            setForm({ username: "", password: "", isAdmin: false });
+            setEditId(null);
+            fetchUsers();
+        } catch (e: any) {
+            setError(e.message || "Unknown error");
+        } finally {
+            setAdding(false);
+        }
      };
 
      // Delete user
      const handleDelete = async (id: number) => {
          if (!window.confirm("Are you sure you want to delete this user?")) return;
          setError("");
-         try {
-             const res = await fetch(`http://10.230.64.30:3000/admin/users/${id}`, {
-                 method: "DELETE",
-                 credentials: "include",
-             });
-             if (!res.ok) throw new Error("Failed to delete user");
-             fetchUsers();
-         } catch (e: any) {
-             setError(e.message || "Unknown error");
-         }
+        try {
+            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+            if (!backendUrl) throw new Error("NEXT_PUBLIC_BACKEND_URL is not set in the environment variables.");
+            const res = await fetch(`${backendUrl}/admin/users/${id}`, {
+                method: "DELETE",
+                credentials: "include",
+            });
+            if (!res.ok) throw new Error("Failed to delete user");
+            fetchUsers();
+        } catch (e: any) {
+            setError(e.message || "Unknown error");
+        }
      };
 
      // Start editing
