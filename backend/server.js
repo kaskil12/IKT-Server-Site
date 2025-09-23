@@ -79,7 +79,7 @@ Promise.all([
   updatePrintersStatus();
   setInterval(updatePrintersStatus, 3 * 60 * 1000);
 
-  server.listen(port, "3000", () => {
+  server.listen(port, "0.0.0.0", () => {
     console.log(`Express app listening at http://localhost:${port}`);
   });
 });
