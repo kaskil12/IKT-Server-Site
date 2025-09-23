@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 
 const fetchSettingsStrings = async () => {
     try {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    const response = await fetch(`${backendUrl}/settings`);
+        const response = await fetch("http://10.230.64.30:3000/settings");
         if (!response.ok) throw new Error("Failed to fetch settings");
         return await response.json();
     } catch (e) {
@@ -69,8 +68,7 @@ export default function Printer() {
         if (!newSetting.trim()) return;
         setAddingSetting(true);
         try {
-            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-            const res = await fetch(`${backendUrl}/settings/add`, {
+            const res = await fetch("http://10.230.64.30:3000/settings/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ value: newSetting.trim() })
@@ -84,8 +82,7 @@ export default function Printer() {
     };
     const handleDeleteSettingString = async (str: string) => {
         try {
-            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-            const res = await fetch(`${backendUrl}/settings/delete`, {
+            const res = await fetch("http://10.230.64.30:3000/settings/delete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ value: str })
@@ -98,8 +95,7 @@ export default function Printer() {
 
     const fetchPrinters = async () => {
         try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-        const response = await fetch(`${backendUrl}/getAll`);
+            const response = await fetch("http://10.230.64.30:3000/getAll");
             const data = await response.json();
             setPrinters(data);
             setLoading(false);
@@ -116,9 +112,7 @@ export default function Printer() {
 
         const interval = setInterval(fetchPrinters, 5 * 60 * 1000);
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    if (!backendUrl) throw new Error("NEXT_PUBLIC_BACKEND_URL is not set in the environment variables.");
-    const socket = io(backendUrl);
+        const socket = io("http://10.230.64.30:3000");
         socket.on("printersUpdated", (data: Printer[]) => {
             setPrinters(data);
             setLoading(false);
@@ -144,8 +138,7 @@ export default function Printer() {
             return;
         }
         try {
-            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-            await fetch(`${backendUrl}/add`, {
+            await fetch("http://10.230.64.30:3000/add", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -187,8 +180,7 @@ export default function Printer() {
     const handleEditPrinter = async () => {
         if (editId === null) return;
         try {
-            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-            await fetch(`${backendUrl}/update`, {
+            await fetch("http://10.230.64.30:3000/update", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -224,8 +216,7 @@ export default function Printer() {
 
     const handleDeletePrinter = async (id: number) => {
         try {
-            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-            await fetch(`${backendUrl}/delete`, {
+            await fetch("http://10.230.64.30:3000/delete", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
