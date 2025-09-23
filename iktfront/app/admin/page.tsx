@@ -1,7 +1,8 @@
 
  "use client";
  import { useEffect, useState } from "react";
- import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { backendUrl } from "@/lib/backend";
  import { Button } from "@/components/ui/button";
 
  interface UserRow {
@@ -24,7 +25,8 @@
          setLoading(true);
          setError("");
          try {
-             const res = await fetch("http://10.230.64.30:3000/admin/users", { credentials: "include" });
+             const url = await backendUrl("/admin/users");
+             const res = await fetch(url, { credentials: "include" });
              if (!res.ok) throw new Error("Failed to fetch users");
              const data = await res.json();
              setUsers(data);
@@ -47,7 +49,8 @@
          try {
              if (editId) {
                  // Edit user
-                 const res = await fetch(`http://10.230.64.30:3000/admin/users/${editId}`, {
+                 const url = await backendUrl(`/admin/users/${editId}`);
+                 const res = await fetch(url, {
                      method: "PUT",
                      headers: { "Content-Type": "application/json" },
                      credentials: "include",
@@ -56,7 +59,8 @@
                  if (!res.ok) throw new Error("Failed to update user");
              } else {
                  // Add user
-                 const res = await fetch("http://10.230.64.30:3000/admin/users", {
+                 const url = await backendUrl("/admin/users");
+                 const res = await fetch(url, {
                      method: "POST",
                      headers: { "Content-Type": "application/json" },
                      credentials: "include",
@@ -82,7 +86,8 @@
          if (!window.confirm("Are you sure you want to delete this user?")) return;
          setError("");
          try {
-             const res = await fetch(`http://10.230.64.30:3000/admin/users/${id}`, {
+             const url = await backendUrl(`/admin/users/${id}`);
+             const res = await fetch(url, {
                  method: "DELETE",
                  credentials: "include",
              });

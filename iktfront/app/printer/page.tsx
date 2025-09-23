@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
+import { backendUrl } from "@/lib/backend";
 
 const fetchSettingsStrings = async () => {
     try {
-        const response = await fetch("http://10.230.64.30:3000/settings");
+        const url = await backendUrl("/settings");
+        const response = await fetch(url);
         if (!response.ok) throw new Error("Failed to fetch settings");
         return await response.json();
     } catch (e) {
@@ -68,7 +70,8 @@ export default function Printer() {
         if (!newSetting.trim()) return;
         setAddingSetting(true);
         try {
-            const res = await fetch("http://10.230.64.30:3000/settings/add", {
+            const url = await backendUrl("/settings/add");
+            const res = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ value: newSetting.trim() })
@@ -82,7 +85,8 @@ export default function Printer() {
     };
     const handleDeleteSettingString = async (str: string) => {
         try {
-            const res = await fetch("http://10.230.64.30:3000/settings/delete", {
+            const url = await backendUrl("/settings/delete");
+            const res = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ value: str })
@@ -95,7 +99,8 @@ export default function Printer() {
 
     const fetchPrinters = async () => {
         try {
-            const response = await fetch("http://10.230.64.30:3000/getAll");
+            const url = await backendUrl("/getAll");
+            const response = await fetch(url);
             const data = await response.json();
             setPrinters(data);
             setLoading(false);
@@ -112,15 +117,21 @@ export default function Printer() {
 
         const interval = setInterval(fetchPrinters, 5 * 60 * 1000);
 
-        const socket = io("http://10.230.64.30:3000");
-        socket.on("printersUpdated", (data: Printer[]) => {
-            setPrinters(data);
-            setLoading(false);
+        backendUrl("").then((base) => {
+            const socketInstance = io(base.replace(/\/$/, ""));
+            socketInstance.on("printersUpdated", (data: Printer[]) => {
+                setPrinters(data);
+                setLoading(false);
+            });
+            (window as any).__printerSocket = socketInstance;
         });
 
         return () => {
             clearInterval(interval);
-            socket.disconnect();
+            if ((window as any).__printerSocket) {
+                (window as any).__printerSocket.disconnect();
+                delete (window as any).__printerSocket;
+            }
         };
     }, []);
 
@@ -138,7 +149,8 @@ export default function Printer() {
             return;
         }
         try {
-            await fetch("http://10.230.64.30:3000/add", {
+            const url = await backendUrl("/add");
+            await fetch(url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -180,7 +192,8 @@ export default function Printer() {
     const handleEditPrinter = async () => {
         if (editId === null) return;
         try {
-            await fetch("http://10.230.64.30:3000/update", {
+            const url = await backendUrl("/update");
+            await fetch(url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -216,7 +229,8 @@ export default function Printer() {
 
     const handleDeletePrinter = async (id: number) => {
         try {
-            await fetch("http://10.230.64.30:3000/delete", {
+            const url = await backendUrl("/delete");
+            await fetch(url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

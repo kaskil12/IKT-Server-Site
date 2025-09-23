@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { backendUrl } from "@/lib/backend";
 
 interface User {
   id: number;
@@ -28,7 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('http://10.230.64.30:3000/users/check-auth', {
+      const url = await backendUrl("/users/check-auth");
+      const response = await fetch(url, {
         credentials: 'include'
       });
       const data = await response.json();
@@ -48,7 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://10.230.64.30:3000/users/login', {
+      const url = await backendUrl("/users/login");
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('http://10.230.64.30:3000/users/logout', {
+      const url = await backendUrl("/users/logout");
+      await fetch(url, {
         method: 'POST',
         credentials: 'include'
       });

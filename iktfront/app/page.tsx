@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { backendUrl } from "@/lib/backend";
 
 import {
   ChartLineLabel,
@@ -52,9 +53,11 @@ export default function Home() {
     let socket: any = null;
     const fetchData = async () => {
       try {
+        const url1 = await backendUrl("/getAll");
+        const url2 = await backendUrl("/settings");
         const [printerRes, settingsRes] = await Promise.all([
-          fetch("http://10.230.64.30:3000/getAll", { credentials: 'include' }),
-          fetch("http://10.230.64.30:3000/settings", { credentials: 'include' })
+          fetch(url1, { credentials: 'include' }),
+          fetch(url2, { credentials: 'include' })
         ]);
         const printers = await printerRes.json();
         const settings = await settingsRes.json();
@@ -69,12 +72,14 @@ export default function Home() {
     };
     fetchData();
 
-
-    const io = require("socket.io-client");
-    socket = io("http://10.230.64.30:3000");
-    socket.on("printersUpdated", (data: Printer[]) => {
-      setPrinters(data);
-      setLoading(false);
+    import("socket.io-client").then(({ default: io }) => {
+      backendUrl("").then((base) => {
+        socket = io(base.replace(/\/$/, ""));
+        socket.on("printersUpdated", (data: Printer[]) => {
+          setPrinters(data);
+          setLoading(false);
+        });
+      });
     });
 
     return () => {
