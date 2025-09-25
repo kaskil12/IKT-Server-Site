@@ -3,24 +3,27 @@ const { Model, DataTypes } = require("sequelize");
 module.exports = class Switcher extends Model {
     static init(sequelize) {
         return super.init({
-            name: {
+            modell: {
                 type: DataTypes.STRING,
-                unique: true,
                 allowNull: false
             },
             ip: {
                 type: DataTypes.STRING,
                 allowNull: false
             },
-            model: {
+            lokasjon: {
                 type: DataTypes.STRING,
                 allowNull: false
             },
-            location: {
+            rack: {
                 type: DataTypes.STRING,
                 allowNull: false
             },
-            status: {
+            trafikkMengde: {
+                type: DataTypes.STRING,
+                allowNull: false
+            },
+            online: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false

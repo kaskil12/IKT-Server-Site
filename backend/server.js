@@ -24,7 +24,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 app.use(cors({
-  origin: 'http://10.230.64.30:3001',
+  origin: 'http://192.168.0.46:3001',
   credentials: true
 }));
 app.use(express.json());
@@ -90,11 +90,10 @@ function requireAdmin(req, res, next) {
   }
   next();
 }
-app.post('switcher/add', authenticateToken, requireAdmin, async (req, res) => {
-  const { name, ip, model, location, status } = req.body;
-
+app.post('/switcher/add', authenticateToken, requireAdmin, async (req, res) => {
+  const { modell, ip, lokasjon, rack, trafikkMengde, online } = req.body;
   try {
-    const switcher = await Switcher.create({ name, ip, model, location, status });
+    const switcher = await Switcher.create({ modell, ip, lokasjon, rack, trafikkMengde, online });
     res.status(201).json(switcher);
   } catch (error) {
     console.error('Error adding switcher:', error);
@@ -112,18 +111,18 @@ app.get('/switcher/all', authenticateToken, requireAdmin, async (req, res) => {
 });
 app.post('/switcher/update/:id', authenticateToken, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { name, ip, model, location, status } = req.body;
-
+  const { modell, ip, lokasjon, rack, trafikkMengde, online } = req.body;
   try {
     const switcher = await Switcher.findByPk(id);
     if (!switcher) {
       return res.status(404).json({ error: 'Switcher not found' });
     }
-    switcher.name = name;
+    switcher.modell = modell;
     switcher.ip = ip;
-    switcher.model = model;
-    switcher.location = location;
-    switcher.status = status;
+    switcher.lokasjon = lokasjon;
+    switcher.rack = rack;
+    switcher.trafikkMengde = trafikkMengde;
+    switcher.online = online;
     await switcher.save();
     res.json(switcher);
   } catch (error) {
@@ -322,6 +321,7 @@ app.get('/getAll', async (req, res) => {
 
   res.send(await Printer.findAll())
 })
+
 const updatePrintersStatus = async () => {
   const printers = await Printer.findAll();
   for (const printer of printers) {

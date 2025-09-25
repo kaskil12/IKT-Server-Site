@@ -24,6 +24,7 @@ import { PiGlobeSimpleXBold } from "react-icons/pi";
 import { FaEdit } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { Slider } from "@/components/ui/slider"
 interface OID {
     name: string;
     oid: string;
@@ -48,6 +49,7 @@ export default function Printer() {
     const [openSettings, setOpenSettings] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
+    const [GridBoxSize, setGridBoxSize] = useState(1);
     const [form, setForm] = useState({
         model: "",
         serienumber: "",
@@ -286,8 +288,9 @@ export default function Printer() {
                 <div
                     className="grid gap-4"
                     style={{
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                        width: '100%',
+                        gridTemplateColumns: `repeat(auto-fit, minmax(${200 * GridBoxSize}px, 1fr))`,
+                        width: `${GridBoxSize * 100}%`,
+                        transition: "width 0.3s, grid-template-columns 0.3s",
                         overflowX: 'auto',
                     }}
                 >
@@ -298,9 +301,11 @@ export default function Printer() {
                             style={{
                                 minWidth: 0,
                                 maxWidth: '100%',
-                                minHeight: '120px',
+                                minHeight: `${120 * GridBoxSize}px`,
                                 wordBreak: 'break-word',
                                 overflow: 'hidden',
+                                fontSize: `${1 * GridBoxSize}rem`,
+                                transition: "min-height 0.3s, font-size 0.3s",
                             }}
                         >
                             <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
@@ -601,6 +606,21 @@ export default function Printer() {
                                         disabled={addingSetting || !newSetting?.trim()}
                                     >Legg til</button>
                                 </div>
+                                <input type="text" className="rounded px-2 py-1 text-black outline w-20" placeholder="Boks størrelse" value={GridBoxSize} onChange={(e) => {
+                        let val = parseFloat(e.target.value);
+                        if (isNaN(val)) val = 1;
+                        if (val < 0.1) val = 0.1;
+                        if (val > 10) val = 10;
+                        setGridBoxSize(val);
+                    }} />
+                                <Slider
+                                className="w-32"
+                                    value={[GridBoxSize]}
+                                    defaultValue={[1]}
+                                    max={10}
+                                    step={0.01}
+                                    onValueChange={(value: number[]) => setGridBoxSize(value[0])}
+                                />
                                 <button className="mt-2 text-sm text-gray-600 underline" onClick={() => setOpenSettings(false)}>Lukk</button>
                             </div>
                         </div>
