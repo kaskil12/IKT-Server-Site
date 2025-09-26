@@ -24,7 +24,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 app.use(cors({
-  origin: 'http://192.168.0.46:3001',
+  origin: 'http://10.230.144.12:3001',
   credentials: true
 }));
 app.use(express.json());
@@ -90,7 +90,7 @@ function requireAdmin(req, res, next) {
   }
   next();
 }
-app.post('/switcher/add', authenticateToken, requireAdmin, async (req, res) => {
+app.post('/switcher/add', async (req, res) => {
   const { modell, ip, lokasjon, rack, trafikkMengde, online } = req.body;
   try {
     const switcher = await Switcher.create({ modell, ip, lokasjon, rack, trafikkMengde, online });
@@ -100,7 +100,7 @@ app.post('/switcher/add', authenticateToken, requireAdmin, async (req, res) => {
     res.status(500).json({ error: 'Failed to add switcher' });
   }
 });
-app.get('/switcher/all', authenticateToken, requireAdmin, async (req, res) => {
+app.get('/switcher/all', async (req, res) => {
   try {
     const switchers = await Switcher.findAll();
     res.json(switchers);

@@ -10,3 +10,6 @@ export async function backendUrl(path: string) {
   const ip = await getBackendIp();
   return `http://${ip}${path}`;
 }
+
+
+//npx next dev --port 3001 --hostname 10.230.144.12
