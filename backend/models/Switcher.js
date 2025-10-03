@@ -27,7 +27,17 @@ module.exports = class Switcher extends Model {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false
+            },
+            oids: {
+                type: DataTypes.JSON,
+                allowNull: true
+            },
+            monitor: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: true
             }
+
         }, {
             tableName: "Switcher",
             createdAt: false,

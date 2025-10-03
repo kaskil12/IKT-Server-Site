@@ -24,7 +24,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 app.use(cors({
-  origin: 'http://10.230.144.12:3001',
+  origin: 'http://192.168.0.46:3001',
   credentials: true
 }));
 app.use(express.json());
@@ -109,7 +109,7 @@ app.get('/switcher/all', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch switchers' });
   }
 });
-app.post('/switcher/update/:id', authenticateToken, requireAdmin, async (req, res) => {
+app.post('/switcher/update/:id', async (req, res) => {
   const { id } = req.params;
   const { modell, ip, lokasjon, rack, trafikkMengde, online } = req.body;
   try {
@@ -128,6 +128,21 @@ app.post('/switcher/update/:id', authenticateToken, requireAdmin, async (req, re
   } catch (error) {
     console.error('Error updating switcher:', error);
     res.status(500).json({ error: 'Failed to update switcher' });
+  }
+});
+app.post('/switcher/delete/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log("Deleting switcher with id:", id);
+  try {
+    const deleted = await Switcher.destroy({ where: { id } });
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ error: 'Switcher not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting switcher:', error);
+    res.status(500).json({ error: 'Failed to delete switcher' });
   }
 });
 
@@ -364,6 +379,45 @@ const updatePrintersStatus = async () => {
   }
   const allPrinters = await Printer.findAll();
   io.emit('printersUpdated', allPrinters);
+};
+
+const monitorbandwidth = async () => {
+  const switchers = await Switcher.findAll();
+  for (const switcher of switchers) {
+    const session = snmp.createSession(switcher.ip, "public");
+    const oids = switcher.oids || [];
+    let updatedOids = [];
+
+    const getOidValue = oidObj =>
+      new Promise(resolve => {
+        session.get([oidObj.oid], (error, varbinds) => {
+          if (error || !varbinds || varbinds.length === 0) {
+            resolve({
+              name: oidObj.name,
+              oid: oidObj.oid,
+              value: null
+            });
+          } else {
+            resolve({
+              name: oidObj.name,
+              oid: oidObj.oid,
+              value: varbinds[0].value
+            });
+          }
+        });
+
+      });
+
+    updatedOids = await Promise.all(oids.map(getOidValue));
+
+    await Switcher.update({
+      oids: updatedOids
+    }, { where: { id: switcher.id } });
+
+    session.close();
+  }
+  const allSwitchers = await Switcher.findAll();
+  io.emit('switchersUpdated', allSwitchers);
 };
 
 app.post('/add', async (req, res) => {

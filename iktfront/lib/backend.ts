@@ -12,4 +12,4 @@ export async function backendUrl(path: string) {
 }
 
 
-//npx next dev --port 3001 --hostname 10.230.144.12
+//npx next dev --port 3001 --hostname 192.168.0.46

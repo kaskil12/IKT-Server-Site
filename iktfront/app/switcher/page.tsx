@@ -7,6 +7,7 @@ import { ChartAreaInteractive } from "@/app/switcher/Components/chart";
 import { useState } from "react";
 import { backendUrl } from "@/lib/backend";
 import fetchSwitches from "@/app/switcher/Components/switch_cards";
+import * as RadixCheckbox from "@radix-ui/react-checkbox";
 
 export default function Switcher(){
     const [openAdd, SetOpenAdd] = useState(false);
@@ -16,7 +17,9 @@ export default function Switcher(){
         lokasjon: "",
         rack: "",
         trafikkMengde: 0,
-        online: true
+        online: true,
+        oids: [] as string[],
+        monitor: false,
     });
     const handleAddSwitcher = async () => {
         const url = await backendUrl("/switcher/add");
@@ -29,7 +32,9 @@ export default function Switcher(){
                 lokasjon: form.lokasjon,
                 rack: form.rack,
                 trafikkMengde: form.trafikkMengde,
-                online: form.online
+                online: form.online,
+                oids: form.oids,
+                monitor: form.monitor,
             })
         });
         if (!res.ok) {
@@ -56,6 +61,22 @@ export default function Switcher(){
                         <input type="text" placeholder="IP Adresse" value={form.ip} onChange={(e) => setForm({ ...form, ip: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
                         <input type="text" placeholder="Lokasjon" value={form.lokasjon} onChange={(e) => setForm({ ...form, lokasjon: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
                         <input type="text" placeholder="Rack" value={form.rack} onChange={(e) => setForm({ ...form, rack: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
+                        <input type="text" placeholder="oids (komma separert)" value={form.oids} onChange={(e) => setForm({ ...form, oids: e.target.value.split(",") })} className="p-2 rounded bg-gray-700 text-white flex-1" />
+                        <div className="flex items-center">
+                            <RadixCheckbox.Root
+                                checked={form.monitor}
+                                onCheckedChange={(checked) => setForm({ ...form, monitor: !!checked })}
+                                className="w-5 h-5 bg-gray-700 border rounded flex items-center justify-center"
+                                id="monitor-checkbox"
+                            >
+                                <RadixCheckbox.Indicator className="text-green-500">
+                                    ✓
+                                </RadixCheckbox.Indicator>
+                            </RadixCheckbox.Root>
+                            <label htmlFor="monitor-checkbox" className="ml-2 text-white">Overvåk</label>
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-2 mt-4">
                         <Button className="bg-green-700" onClick={handleAddSwitcher}>Legg til</Button>
                         <Button className="bg-red-700" onClick={() => SetOpenAdd(false)}>Avbryt</Button>
                     </div>
