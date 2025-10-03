@@ -171,6 +171,7 @@ const fetchtraffic = async () => {
       const outgoingTraffic = varbinds[1]?.value || 0;
       switcher.trafikkMengde = incomingTraffic + outgoingTraffic;
       await switcher.save();
+      io.emit('switchersUpdated');
     });
     if (!incomingOid || !outgoingOid) {
       console.warn(`Switch ${switcher.id} has invalid Incoming or Outgoing OID`);

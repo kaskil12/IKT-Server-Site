@@ -8,6 +8,7 @@ import { useState } from "react";
 import { backendUrl } from "@/lib/backend";
 import fetchSwitches from "@/app/switcher/Components/switch_cards";
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
+import io from "socket.io-client";
 
 export default function Switcher(){
     const [openAdd, SetOpenAdd] = useState(false);
@@ -47,6 +48,11 @@ export default function Switcher(){
         SetOpenAdd(false);
         window.location.reload();
     }
+    const socketInstance = io();
+    socketInstance.on("switchersUpdated", (data: any) => {
+        console.log("Switchers updated via WebSocket", data);
+        fetchSwitches();
+    });
     
     return(
         <ProtectedRoute>

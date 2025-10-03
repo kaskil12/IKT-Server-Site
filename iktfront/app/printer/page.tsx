@@ -25,6 +25,7 @@ import { FaEdit } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Slider } from "@/components/ui/slider"
+import { Console } from "console";
 interface OID {
     name: string;
     oid: string;
@@ -117,19 +118,18 @@ export default function Printer() {
         fetchPrinters();
         fetchSettingsStrings().then(setSettingsStrings);
 
-        const interval = setInterval(fetchPrinters, 5 * 60 * 1000);
 
         backendUrl("").then((base) => {
             const socketInstance = io(base.replace(/\/$/, ""));
             socketInstance.on("printersUpdated", (data: Printer[]) => {
                 setPrinters(data);
                 setLoading(false);
+                console.log("Printers updated via WebSocket", data);
             });
             (window as any).__printerSocket = socketInstance;
         });
 
         return () => {
-            clearInterval(interval);
             if ((window as any).__printerSocket) {
                 (window as any).__printerSocket.disconnect();
                 delete (window as any).__printerSocket;
