@@ -288,9 +288,8 @@ export default function Printer() {
                 <div
                     className="grid gap-4"
                     style={{
-                        gridTemplateColumns: `repeat(auto-fit, minmax(${200 * GridBoxSize}px, 1fr))`,
-                        width: `${GridBoxSize * 100}%`,
-                        transition: "width 0.3s, grid-template-columns 0.3s",
+                        gridTemplateColumns: `repeat(auto-fit, minmax(200px, 1fr))`,
+                        transition: "grid-template-columns 0.3s",
                         overflowX: 'auto',
                     }}
                 >
@@ -305,7 +304,8 @@ export default function Printer() {
                                 wordBreak: 'break-word',
                                 overflow: 'hidden',
                                 fontSize: `${1 * GridBoxSize}rem`,
-                                transition: "min-height 0.3s, font-size 0.3s",
+                                padding: `${12 * GridBoxSize}px`,
+                                transition: "min-height 0.3s, font-size 0.3s, padding 0.3s",
                             }}
                         >
                             <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
