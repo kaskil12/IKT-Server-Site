@@ -77,6 +77,7 @@ Promise.all([
   }
 
   updatePrintersStatus();
+  setInterval(fetchtraffic, 2 * 60 * 1000);
   setInterval(updatePrintersStatus, 3 * 60 * 1000);
 
   server.listen(port, "0.0.0.0", () => {
@@ -145,6 +146,38 @@ app.post('/switcher/delete/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete switcher' });
   }
 });
+
+const fetchtraffic = async () => {
+  const switchers = await Switcher.findAll();
+  for (const switcher of switchers) {
+    const session = snmp.createSession(switcher.ip, "public");
+    const oids = switcher.oids || [];
+    const incomingOidObj = oids.find(oid => oid.name.toLowerCase() === 'incoming');
+    const outgoingOidObj = oids.find(oid => oid.name.toLowerCase() === 'outgoing');
+    if (!incomingOidObj || !outgoingOidObj) {
+      console.warn(`Switch ${switcher.id} is missing Incoming or Outgoing OID`);
+      continue;
+    }
+    const incomingOid = incomingOidObj.oid;
+    const outgoingOid = outgoingOidObj.oid;
+
+
+    session.get([incomingOid, outgoingOid], async (error, varbinds) => {
+      if (error) {
+        console.error(`Error fetching SNMP data for switch ${switcher.id}:`, error);
+        return;
+      }
+      const incomingTraffic = varbinds[0]?.value || 0;
+      const outgoingTraffic = varbinds[1]?.value || 0;
+      switcher.trafikkMengde = incomingTraffic + outgoingTraffic;
+      await switcher.save();
+    });
+    if (!incomingOid || !outgoingOid) {
+      console.warn(`Switch ${switcher.id} has invalid Incoming or Outgoing OID`);
+      continue;
+    }
+  }
+};
 
 app.get('/admin/users', authenticateToken, requireAdmin, async (req, res) => {
   try {
@@ -381,44 +414,44 @@ const updatePrintersStatus = async () => {
   io.emit('printersUpdated', allPrinters);
 };
 
-const monitorbandwidth = async () => {
-  const switchers = await Switcher.findAll();
-  for (const switcher of switchers) {
-    const session = snmp.createSession(switcher.ip, "public");
-    const oids = switcher.oids || [];
-    let updatedOids = [];
+// const monitorbandwidth = async () => {
+//   const switchers = await Switcher.findAll();
+//   for (const switcher of switchers) {
+//     const session = snmp.createSession(switcher.ip, "public");
+//     const oids = switcher.oids || [];
+//     let updatedOids = [];
 
-    const getOidValue = oidObj =>
-      new Promise(resolve => {
-        session.get([oidObj.oid], (error, varbinds) => {
-          if (error || !varbinds || varbinds.length === 0) {
-            resolve({
-              name: oidObj.name,
-              oid: oidObj.oid,
-              value: null
-            });
-          } else {
-            resolve({
-              name: oidObj.name,
-              oid: oidObj.oid,
-              value: varbinds[0].value
-            });
-          }
-        });
+//     const getOidValue = oidObj =>
+//       new Promise(resolve => {
+//         session.get([oidObj.oid], (error, varbinds) => {
+//           if (error || !varbinds || varbinds.length === 0) {
+//             resolve({
+//               name: oidObj.name,
+//               oid: oidObj.oid,
+//               value: null
+//             });
+//           } else {
+//             resolve({
+//               name: oidObj.name,
+//               oid: oidObj.oid,
+//               value: varbinds[0].value
+//             });
+//           }
+//         });
 
-      });
+//       });
 
-    updatedOids = await Promise.all(oids.map(getOidValue));
+//     updatedOids = await Promise.all(oids.map(getOidValue));
 
-    await Switcher.update({
-      oids: updatedOids
-    }, { where: { id: switcher.id } });
+//     await Switcher.update({
+//       oids: updatedOids
+//     }, { where: { id: switcher.id } });
 
-    session.close();
-  }
-  const allSwitchers = await Switcher.findAll();
-  io.emit('switchersUpdated', allSwitchers);
-};
+//     session.close();
+//   }
+//   const allSwitchers = await Switcher.findAll();
+//   io.emit('switchersUpdated', allSwitchers);
+// };
 
 app.post('/add', async (req, res) => {
   const { modell, serienummer, PrinterIP, plassering, oids, feilkode, online } = req.body;

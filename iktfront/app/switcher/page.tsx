@@ -18,7 +18,10 @@ export default function Switcher(){
         rack: "",
         trafikkMengde: 0,
         online: true,
-        oids: [] as string[],
+        oids: [
+            { name: "incoming", oid: "" },
+            { name: "outgoing", oid: "" }
+        ],
         monitor: false,
     });
     const handleAddSwitcher = async () => {
@@ -61,7 +64,8 @@ export default function Switcher(){
                         <input type="text" placeholder="IP Adresse" value={form.ip} onChange={(e) => setForm({ ...form, ip: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
                         <input type="text" placeholder="Lokasjon" value={form.lokasjon} onChange={(e) => setForm({ ...form, lokasjon: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
                         <input type="text" placeholder="Rack" value={form.rack} onChange={(e) => setForm({ ...form, rack: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
-                        <input type="text" placeholder="oids (komma separert)" value={form.oids} onChange={(e) => setForm({ ...form, oids: e.target.value.split(",") })} className="p-2 rounded bg-gray-700 text-white flex-1" />
+                        <input type="text" placeholder="OID Incoming" value={form.oids[0].oid} onChange={(e) => setForm({ ...form, oids: [{ ...form.oids[0], oid: e.target.value }, form.oids[1]] })} className="p-2 rounded bg-gray-700 text-white flex-1" />
+                        <input type="text" placeholder="OID Outgoing" value={form.oids[1].oid} onChange={(e) => setForm({ ...form, oids: [form.oids[0], { ...form.oids[1], oid: e.target.value }] })} className="p-2 rounded bg-gray-700 text-white flex-1" />
                         <div className="flex items-center">
                             <RadixCheckbox.Root
                                 checked={form.monitor}
