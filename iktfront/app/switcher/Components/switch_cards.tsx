@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { use, useEffect, useState } from "react";
 import { backendUrl } from "@/lib/backend";
+import { ChartAreaInteractive } from "./chart";
+import { ChartAreaDefault } from "./chart-area-default";
 interface Switcher {
     id: number;
     modell: string;
@@ -69,6 +71,7 @@ export default function SwitchCards() {
                     <p><strong>Lokasjon og Rack:</strong> {switcher.lokasjon} - {switcher.rack}</p>
                     <p><strong>TrafikkMengde:</strong> {switcher.trafikkMengde}</p>
                     <p><strong>Online:</strong> <span className={switcher.online ? "text-green-400" : "text-red-400"}>{switcher.online ? "Ja" : "Nei"}</span></p>
+                    <ChartAreaDefault />
                 </Card>
             ))}
         </>

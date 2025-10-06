@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IKTPrinter")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dacb5b81ddf85606f38fb7ffbf77f389253326b5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+148437ce911bb04b9aba4cbf9bc8f63e4ad34ca6")]
 [assembly: System.Reflection.AssemblyProductAttribute("IKTPrinter")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IKTPrinter")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

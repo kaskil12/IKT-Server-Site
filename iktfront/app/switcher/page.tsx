@@ -1,4 +1,5 @@
 "use client"
+import { useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SwitchCards from "@/app/switcher/Components/switch_cards";
 import { Button } from "@/components/ui/button";
@@ -48,11 +49,23 @@ export default function Switcher(){
         SetOpenAdd(false);
         window.location.reload();
     }
-    const socketInstance = io();
-    socketInstance.on("switchersUpdated", (data: any) => {
-        console.log("Switchers updated via WebSocket", data);
-        fetchSwitches();
-    });
+    useEffect(() => {
+        let socketInstance: any = null;
+        async function connectSocket() {
+            const io = (await import("socket.io-client")).default;
+            const { getBackendIp } = await import("@/lib/backend");
+            const ip = await getBackendIp();
+            socketInstance = io(`http://${ip}`, { transports: ["websocket", "polling"] });
+            socketInstance.on("switchersUpdated", (data: any) => {
+                console.log("Switchers updated via WebSocket", data);
+                fetchSwitches();
+            });
+        }
+        connectSocket();
+        return () => {
+            if (socketInstance) socketInstance.disconnect();
+        };
+    }, []);
     
     return(
         <ProtectedRoute>
