@@ -24,7 +24,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 app.use(cors({
-  origin: 'http://192.168.0.46:3001',
+  origin: 'http://10.230.17.52:3001',
   credentials: true
 }));
 app.use(express.json());
@@ -77,7 +77,7 @@ Promise.all([
   }
 
   updatePrintersStatus();
-  setInterval(fetchtraffic, 2 * 60 * 1000);
+  setInterval(fetchtraffic, 1 * 10 * 1000);
   setInterval(updatePrintersStatus, 3 * 60 * 1000);
 
   server.listen(port, "0.0.0.0", () => {
@@ -92,9 +92,9 @@ function requireAdmin(req, res, next) {
   next();
 }
 app.post('/switcher/add', async (req, res) => {
-  const { modell, ip, lokasjon, rack, trafikkMengde, online } = req.body;
+  const { modell, ip, lokasjon, rack, trafikkMengde, online, oids, community, monitor } = req.body;
   try {
-    const switcher = await Switcher.create({ modell, ip, lokasjon, rack, trafikkMengde, online });
+    const switcher = await Switcher.create({ modell, ip, lokasjon, rack, trafikkMengde, online, oids, community, monitor });
     res.status(201).json(switcher);
   } catch (error) {
     console.error('Error adding switcher:', error);
@@ -112,18 +112,16 @@ app.get('/switcher/all', async (req, res) => {
 });
 app.post('/switcher/update/:id', async (req, res) => {
   const { id } = req.params;
-  const { modell, ip, lokasjon, rack, trafikkMengde, online } = req.body;
   try {
     const switcher = await Switcher.findByPk(id);
     if (!switcher) {
       return res.status(404).json({ error: 'Switcher not found' });
     }
-    switcher.modell = modell;
-    switcher.ip = ip;
-    switcher.lokasjon = lokasjon;
-    switcher.rack = rack;
-    switcher.trafikkMengde = trafikkMengde;
-    switcher.online = online;
+    Object.keys(req.body).forEach(key => {
+      if (key in switcher) {
+        switcher[key] = req.body[key];
+      }
+    });
     await switcher.save();
     res.json(switcher);
   } catch (error) {
@@ -147,10 +145,13 @@ app.post('/switcher/delete/:id', async (req, res) => {
   }
 });
 
+
+let switchTrafficHistory = {};
+
 const fetchtraffic = async () => {
-  const switchers = await Switcher.findAll();
+  const switchers = await Switcher.findAll({ where: { monitor: true } });
+  let updatedSwitchers = [];
   for (const switcher of switchers) {
-    const session = snmp.createSession(switcher.ip, "public");
     const oids = switcher.oids || [];
     const incomingOidObj = oids.find(oid => oid.name.toLowerCase() === 'incoming');
     const outgoingOidObj = oids.find(oid => oid.name.toLowerCase() === 'outgoing');
@@ -160,24 +161,102 @@ const fetchtraffic = async () => {
     }
     const incomingOid = incomingOidObj.oid;
     const outgoingOid = outgoingOidObj.oid;
-
-
-    session.get([incomingOid, outgoingOid], async (error, varbinds) => {
-      if (error) {
-        console.error(`Error fetching SNMP data for switch ${switcher.id}:`, error);
-        return;
-      }
-      const incomingTraffic = varbinds[0]?.value || 0;
-      const outgoingTraffic = varbinds[1]?.value || 0;
-      switcher.trafikkMengde = incomingTraffic + outgoingTraffic;
+    const speedOid = "1.3.6.1.2.1.2.2.1.5.4";
+    const community = switcher.community || "public";
+    let session1;
+    try {
+      session1 = snmp.createSession(switcher.ip, community);
+    } catch (err) {
+      console.error(`Failed to create SNMP session for switch ${switcher.id}:`, err);
+      switcher.online = false;
       await switcher.save();
-      io.emit('switchersUpdated');
-    });
-    if (!incomingOid || !outgoingOid) {
-      console.warn(`Switch ${switcher.id} has invalid Incoming or Outgoing OID`);
+      updatedSwitchers.push(switcher);
       continue;
     }
+    console.log(`Calling OIDs for switch ${switcher.id}: Incoming=${incomingOid}, Outgoing=${outgoingOid}, Community=${community}`);
+    var incomingTraffic = 0;
+    var outgoingTraffic = 0;
+    var speedTraffic = 0;
+    await new Promise(resolve => {
+      session1.get([incomingOid, outgoingOid, speedOid], async (error, varbinds) => {
+        if (error || !varbinds || varbinds.length < 2) {
+          console.error(`Error fetching SNMP data for switch ${switcher.id}:`, error);
+          switcher.online = false;
+          await switcher.save();
+          updatedSwitchers.push(switcher);
+          session1.close();
+          return resolve();
+        }
+
+        incomingTraffic = Number(varbinds[0]?.value) || 0;
+        outgoingTraffic = Number(varbinds[1]?.value) || 0;
+        speedTraffic = Number(varbinds[2]?.value) || 0;
+
+        session1.close();
+        resolve();
+      });
+    });
+
+    // Wait before next SNMP call
+    const interval = 5 * 1000; // 15 seconds
+    await new Promise(resolve => setTimeout(resolve, interval));
+
+    var incomingTraffic2 = 0;
+    var outgoingTraffic2 = 0;
+    var speedTraffic2 = 0;
+    let session2;
+    try {
+      session2 = snmp.createSession(switcher.ip, community);
+    } catch (err) {
+      console.error(`Failed to create SNMP session for switch ${switcher.id} (second call):`, err);
+      switcher.online = false;
+      await switcher.save();
+      updatedSwitchers.push(switcher);
+      continue;
+    }
+    await new Promise(resolve => {
+      session2.get([incomingOid, outgoingOid, speedOid], async (error, varbinds) => {
+        if (error || !varbinds || varbinds.length < 2) {
+          console.error(`Error fetching SNMP data for switch ${switcher.id}:`, error);
+          switcher.online = false;
+          await switcher.save();
+          updatedSwitchers.push(switcher);
+          session2.close();
+          return resolve();
+        }
+
+        incomingTraffic2 = Number(varbinds[0]?.value) || 0;
+        outgoingTraffic2 = Number(varbinds[1]?.value) || 0;
+        speedTraffic2 = Number(varbinds[2]?.value) || 0;
+        var deltaIn = incomingTraffic2 - incomingTraffic;
+        var deltaOut = outgoingTraffic2 - outgoingTraffic;
+        var inbps = (deltaIn * 8) / (interval / 1000);
+        var outbps = (deltaOut * 8) / (interval / 1000);
+        var inmbps = inbps / 1000000;
+        var outmbps = outbps / 1000000;
+        let totalTraffic2 = inmbps + outmbps;
+        totalTraffic2 = Math.floor(totalTraffic2);
+        totalTraffic2 = Math.round(totalTraffic2);
+        switcher.trafikkMengde = totalTraffic2;
+        switcher.online = true;
+        await switcher.save();
+        if (!switchTrafficHistory[switcher.id]) switchTrafficHistory[switcher.id] = [];
+        switchTrafficHistory[switcher.id].push({
+          timestamp: Date.now(),
+          incoming: deltaIn,
+          outgoing: deltaOut,
+          total: totalTraffic2
+        });
+        updatedSwitchers.push(switcher);
+        session2.close();
+        resolve();
+      });
+    });
   }
+  io.emit('switchersTrafficUpdate', {
+    switchers: updatedSwitchers.map(s => s.toJSON()),
+    trafficHistory: switchTrafficHistory
+  });
 };
 
 app.get('/admin/users', authenticateToken, requireAdmin, async (req, res) => {

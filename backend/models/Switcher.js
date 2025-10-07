@@ -32,6 +32,11 @@ module.exports = class Switcher extends Model {
                 type: DataTypes.JSON,
                 allowNull: true
             },
+            community: {
+                type: DataTypes.STRING,
+                defaultValue: "public",
+                allowNull: false
+            },
             monitor: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,

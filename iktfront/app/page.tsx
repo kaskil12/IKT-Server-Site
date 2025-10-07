@@ -1,14 +1,9 @@
-
-"use client";
-import Image from "next/image";
+"use client"
 import { useEffect, useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { backendUrl } from "@/lib/backend";
 
-import {
-  ChartLineLabel,
-} from "@/components/chart-line-label/chart-line-label";
+
 import {
   Table,
   TableBody,
@@ -19,18 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import DeviceBox from "@/components/DeviceBox/devicebox";
-
-
-const tableData = [
-  { dato: "11.05.2025", status: "Under behandling", tittel: "Knust PC", navn: "Ole Dole" },
-  { dato: "12.05.2025", status: "Løst", tittel: "Nettverksproblem", navn: "Kari Nordmann" },
-  { dato: "13.05.2025", status: "Venter på deler", tittel: "Defekt skjerm", navn: "Per Hansen" },
-  { dato: "14.05.2025", status: "Under behandling", tittel: "Virus infeksjon", navn: "Anne Larsen" },
-  { dato: "15.05.2025", status: "Fullført", tittel: "Programvareinstallasjon", navn: "Erik Johansen" },
-  { dato: "16.05.2025", status: "Under behandling", tittel: "Treg ytelse", navn: "Lise Andersen" },
-  { dato: "17.05.2025", status: "Venter på bruker", tittel: "Passord reset", navn: "Tom Nielsen" },
-  { dato: "18.05.2025", status: "Løst", tittel: "E-post konfigurasjon", navn: "Ida Kristiansen" }
-];
+import { ChartLineLabel } from "@/components/chart-line-label/chart-line-label";
+import type { Switcher } from "@/app/switcher/Components/switch_cards";
 
 type Printer = {
   id: number;
@@ -43,11 +28,22 @@ type Printer = {
   online: boolean;
 };
 
-export default function Home() {
+const tableData = [
+  { dato: "11.05.2025", status: "Under behandling", tittel: "Knust PC", navn: "Ole Dole" },
+  { dato: "12.05.2025", status: "Løst", tittel: "Nettverksproblem", navn: "Kari Nordmann" },
+  { dato: "13.05.2025", status: "Venter på deler", tittel: "Defekt skjerm", navn: "Per Hansen" },
+  { dato: "14.05.2025", status: "Under behandling", tittel: "Virus infeksjon", navn: "Anne Larsen" },
+  { dato: "15.05.2025", status: "Fullført", tittel: "Programvareinstallasjon", navn: "Erik Johansen" },
+  { dato: "16.05.2025", status: "Under behandling", tittel: "Treg ytelse", navn: "Lise Andersen" },
+  { dato: "17.05.2025", status: "Venter på bruker", tittel: "Passord reset", navn: "Tom Nielsen" },
+  { dato: "18.05.2025", status: "Løst", tittel: "E-post konfigurasjon", navn: "Ida Kristiansen" }
+];
+
+export default function DashboardPage() {
   const [printers, setPrinters] = useState<Printer[]>([]);
   const [settingsStrings, setSettingsStrings] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [switches, setSwitches] = useState<Switcher[]>([]);
 
   useEffect(() => {
     let socket: any = null;
@@ -55,21 +51,28 @@ export default function Home() {
       try {
         const url1 = await backendUrl("/getAll");
         const url2 = await backendUrl("/settings");
-        const [printerRes, settingsRes] = await Promise.all([
+        const url3 = await backendUrl("/switcher/all");
+        const [printerRes, settingsRes, switcherRes] = await Promise.all([
           fetch(url1, { credentials: 'include' }),
-          fetch(url2, { credentials: 'include' })
+          fetch(url2, { credentials: 'include' }),
+          fetch(url3, { credentials: 'include' })
         ]);
         const printers = await printerRes.json();
         const settings = await settingsRes.json();
+        const switchesRaw = await switcherRes.json();
+        const monitoredSwitches = (switchesRaw || []).filter((sw: any) => sw.monitor);
         setPrinters(printers);
         setSettingsStrings(settings);
+        setSwitches(monitoredSwitches);
       } catch (e) {
         setPrinters([]);
         setSettingsStrings([]);
+        setSwitches([]);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
 
     import("socket.io-client").then(({ default: io }) => {
@@ -79,6 +82,10 @@ export default function Home() {
           setPrinters(data);
           setLoading(false);
         });
+        socket.on("switchersTrafficUpdate", (data: { switchers: any[] }) => {
+          const monitoredSwitches = (data.switchers || []).filter((sw: any) => sw.monitor);
+          setSwitches(monitoredSwitches);
+        });
       });
     });
 
@@ -87,8 +94,6 @@ export default function Home() {
     };
   }, []);
 
-  console.log("printers", printers);
-  console.log("settingsStrings", settingsStrings);
   function normalize(str: string) {
     return str.toLowerCase().replace(/[^a-z0-9æøåäöüéèáà. ]/gi, '').replace(/[.,!?;:]/g, '').trim();
   }
@@ -130,12 +135,10 @@ export default function Home() {
     return value;
   }
 
-
   const errorPrinters = useMemo(() => {
     const printersWithFeilkode = printers
       .map(printer => ({ ...printer, feilkodeFromOid: getFeilkodeFromOids(printer) }))
       .filter(printer => printer.feilkodeFromOid && printer.feilkodeFromOid.trim() !== "");
-    console.log("printersWithFeilkode", printersWithFeilkode);
     const filtered = printersWithFeilkode.filter((printer) => {
       const normError = normalize(printer.feilkodeFromOid);
       let isWhitelisted = false;
@@ -143,15 +146,10 @@ export default function Home() {
         if (!str) return;
         const normWhite = normalize(str);
         const match = normError === normWhite || normError.includes(normWhite) || normWhite.includes(normError);
-        console.log(
-          `\n---\nRAW feilkode: '${printer.feilkodeFromOid}'\nRAW whitelist: '${str}'\nNORMALIZED feilkode: '${normError}'\nNORMALIZED whitelist: '${normWhite}'\nMatch:`,
-          match
-        );
         if (match) isWhitelisted = true;
       });
       return !isWhitelisted;
     });
-    console.log("errorPrinters", filtered);
     return filtered;
   }, [printers, settingsStrings]);
 
@@ -179,39 +177,39 @@ export default function Home() {
               ))}
             </TableBody>
           </Table>
-
-          {/* {errorPrinters.length > 0 && (
-            <div className="mt-8 p-4 bg-red-900/80 rounded-xl shadow-lg">
-              <h2 className="text-lg font-bold text-red-300 mb-2">Printere med feil (ikke whitelisted):</h2>
-              <ul className="space-y-2">
-                {errorPrinters.map((printer) => (
-                  <li key={printer.id} className="flex flex-col gap-1">
-                    <span className="font-semibold">{printer.modell} ({printer.PrinterIP})</span>
-                    <span className="text-red-200">Feilkode: {printer.feilkode}</span>
-                    <span className="text-xs text-gray-300">Plassering: {printer.plassering}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )} */}
         </div>
         <div className="w-3xl h-3xl flex-initial gap-6 p-6 flex flex-col">
-          <ChartLineLabel cardTitle="Nettverkstrafikk" cardDescription="Siste 30 dager" trendingText="+5% siden forrige måned" footerText="Oppetid 99.99%"
-          chartData={[{ month: "January", antall: 186 },
-            { month: "February", antall: 305 },
-            { month: "March", antall: 237 },
-            { month: "April", antall: 73 },
-            { month: "Mai", antall: 209 },
-            { month: "Juni", antall: 214}]} />
+          <ChartLineLabel
+            cardTitle="Nettverkstrafikk"
+            cardDescription="Live trafikk fra overvåkede switcher"
+            trendingText="Oppdatert hvert 5. minutt"
+            footerText="Oppetid 99.99%"
+            chartData={[
+              {
+                month: "Live",
+                antall: switches
+                  .filter(sw => sw.monitor)
+                  .reduce((sum, sw) => sum + (typeof sw.trafikkMengde === 'string' ? Number(sw.trafikkMengde) : sw.trafikkMengde || 0), 0)
+              }
+            ]}
+          />
           <DeviceBox
-            devices={errorPrinters.map(printer => ({
-              name: printer.modell + ' (' + printer.PrinterIP + ')',
-              error: printer.feilkodeFromOid,
-              location: printer.plassering
-            }))}
+            devices={[
+              ...errorPrinters.map(printer => ({
+                name: printer.modell + ' (' + printer.PrinterIP + ')',
+                error: printer.feilkodeFromOid,
+                location: printer.plassering
+              })),
+              ...switches.map(sw => ({
+                name: sw.modell + ' (' + sw.ip + ')',
+                error: sw.online ? '' : 'Offline',
+                location: sw.lokasjon + ' - ' + sw.rack
+              }))
+            ]}
           />
         </div>
       </div>
     </ProtectedRoute>
   );
 }
+
