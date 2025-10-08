@@ -234,6 +234,8 @@ const fetchtraffic = async () => {
         var outbps = (deltaOut * 8) / (interval / 1000);
         var inmbps = inbps / 1000000;
         var outmbps = outbps / 1000000;
+        inmbps = Math.floor(inmbps)
+        outmbps = Math.floor(outmbps)
         let totalTraffic2 = inmbps + outmbps;
         totalTraffic2 = Math.floor(totalTraffic2);
         totalTraffic2 = Math.round(totalTraffic2);
@@ -243,8 +245,8 @@ const fetchtraffic = async () => {
         if (!switchTrafficHistory[switcher.id]) switchTrafficHistory[switcher.id] = [];
         switchTrafficHistory[switcher.id].push({
           timestamp: Date.now(),
-          incoming: deltaIn,
-          outgoing: deltaOut,
+          incoming: inmbps,
+          outgoing: outmbps,
           total: totalTraffic2
         });
         updatedSwitchers.push(switcher);
