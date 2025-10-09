@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, Tooltip, Legend } from "recharts"
 
 import {
   Card,
@@ -149,27 +149,23 @@ interface ChartAreaInteractiveProps {
 export function ChartAreaInteractive({ switches = [], trafficHistory = {} }: ChartAreaInteractiveProps) {
   const [timeRange, setTimeRange] = React.useState("90d");
 
-  // Build chart data from trafficHistory for monitored switches
   const chartData = React.useMemo(() => {
-    // Flatten all trafficHistory for monitored switches
-    let allTraffic: { date: string; nettverk: number }[] = [];
+    const map: Record<string, Record<string, any>> = {};
     switches.forEach(sw => {
-      const history = trafficHistory[sw.id] || [];
-      history.forEach(entry => {
-        const date = new Date(entry.timestamp);
-        const dateStr = date.toISOString().slice(0, 10);
-        allTraffic.push({ date: dateStr, nettverk: entry.total });
+      const history = Array.isArray(trafficHistory?.[sw.id]) ? trafficHistory[sw.id] : [];
+      history.forEach((entry: any) => {
+        const ts = typeof entry.timestamp === 'number' ? new Date(entry.timestamp).toISOString() : String(entry.timestamp);
+        if (!map[ts]) map[ts] = { date: ts };
+  const base = (sw.modell || `switch`).replace(/\s+/g, '_').replace(/[()]/g, '');
+  const key = `${base}_${sw.id}`;
+        map[ts][key] = (map[ts][key] || 0) + (typeof entry.total === 'number' ? entry.total : Number(entry.total || 0));
       });
     });
-    // Group by date and sum nettverk
-    const grouped: Record<string, number> = {};
-    allTraffic.forEach(item => {
-      grouped[item.date] = (grouped[item.date] || 0) + item.nettverk;
-    });
-    return Object.entries(grouped).map(([date, nettverk]) => ({ date, nettverk }));
+    const arr = Object.values(map).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return arr;
   }, [switches, trafficHistory]);
 
-  const filteredData = chartData.filter((item) => {
+  const filteredData = chartData.filter((item: any) => {
     const date = new Date(item.date);
     const referenceDate = new Date();
     let daysToSubtract = 90;
@@ -240,34 +236,23 @@ export function ChartAreaInteractive({ switches = [], trafficHistory = {} }: Cha
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString("nb-NO", {
-                  month: "short",
-                  day: "numeric",
-                });
+                try {
+                  const date = new Date(value);
+                  return date.toLocaleString();
+                } catch { return String(value); }
               }}
             />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("nb-NO", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }}
-                  indicator="dot"
-                />
-              }
-            />
-            <Area
-              dataKey="nettverk"
-              type="natural"
-              fill="url(#fillNettverk)"
-              stroke="var(--color-nettverk)"
-              stackId="a"
-            />
+            <Tooltip />
+            <Legend />
+            {(() => {
+              const keys = new Set<string>();
+              filteredData.forEach((d: any) => Object.keys(d).forEach(k => { if (k !== 'date') keys.add(k); }));
+              const colors = ["#34d399", "#60a5fa", "#f59e0b", "#ef4444", "#a78bfa", "#06b6d4"];
+              const ks = Array.from(keys);
+              return ks.map((k, idx) => (
+                <Area key={k} dataKey={k} type="monotone" stroke={colors[idx % colors.length]} fillOpacity={0.15} />
+              ));
+            })()}
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
         </ChartContainer>

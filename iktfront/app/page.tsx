@@ -16,6 +16,7 @@ import {
 import DeviceBox from "@/components/DeviceBox/devicebox";
 import { ChartLineLabel } from "@/components/chart-line-label/chart-line-label";
 import type { Switcher } from "@/app/switcher/Components/switch_cards";
+import { ChartAreaInteractive } from "@/app/switcher/Components/chart-area-interactive";
 
 type Printer = {
   id: number;
@@ -44,6 +45,7 @@ export default function DashboardPage() {
   const [settingsStrings, setSettingsStrings] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [switches, setSwitches] = useState<Switcher[]>([]);
+  const [trafficHistory, setTrafficHistory] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
     let socket: any = null;
@@ -60,7 +62,10 @@ export default function DashboardPage() {
         const printers = await printerRes.json();
         const settings = await settingsRes.json();
         const switchesRaw = await switcherRes.json();
-        const monitoredSwitches = (switchesRaw || []).filter((sw: any) => sw.monitor);
+        const monitoredSwitches = (switchesRaw || []).map((sw: any) => ({
+          ...sw,
+          trafikkMengde: Array.isArray(sw.trafikkMengde) ? (sw.trafikkMengde.length ? Number(sw.trafikkMengde[sw.trafikkMengde.length - 1].totaltraffic || 0) : 0) : (typeof sw.trafikkMengde === 'string' ? Number(sw.trafikkMengde) : sw.trafikkMengde)
+        })).filter((sw: any) => sw.monitor);
         setPrinters(printers);
         setSettingsStrings(settings);
         setSwitches(monitoredSwitches);
@@ -82,9 +87,12 @@ export default function DashboardPage() {
           setPrinters(data);
           setLoading(false);
         });
-        socket.on("switchersTrafficUpdate", (data: { switchers: any[] }) => {
+        socket.on("switchersTrafficUpdate", (data: { switchers: any[]; trafficHistory?: Record<string, any[]> }) => {
           const monitoredSwitches = (data.switchers || []).filter((sw: any) => sw.monitor);
           setSwitches(monitoredSwitches);
+          if (data.trafficHistory && typeof data.trafficHistory === 'object') {
+            setTrafficHistory(data.trafficHistory);
+          }
         });
       });
     });
@@ -179,20 +187,7 @@ export default function DashboardPage() {
           </Table>
         </div>
         <div className="w-3xl h-3xl flex-initial gap-6 p-6 flex flex-col">
-          <ChartLineLabel
-            cardTitle="Nettverkstrafikk"
-            cardDescription="Live trafikk fra overvåkede switcher"
-            trendingText="Oppdatert hvert 5. minutt"
-            footerText="Oppetid 99.99%"
-            chartData={[
-              {
-                month: "Live",
-                antall: switches
-                  .filter(sw => sw.monitor)
-                  .reduce((sum, sw) => sum + (typeof sw.trafikkMengde === 'string' ? Number(sw.trafikkMengde) : sw.trafikkMengde || 0), 0)
-              }
-            ]}
-          />
+          <ChartAreaInteractive switches={switches.filter(sw => sw.monitor).map(sw => ({ ...sw, trafikkMengde: typeof sw.trafikkMengde === 'string' ? Number(sw.trafikkMengde) : sw.trafikkMengde }))} trafficHistory={trafficHistory} />
           <DeviceBox
             devices={[
               ...errorPrinters.map(printer => ({

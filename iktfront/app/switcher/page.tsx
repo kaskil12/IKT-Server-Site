@@ -24,6 +24,8 @@ export default function Switcher(){
             { name: "incoming", oid: "" },
             { name: "outgoing", oid: "" }
         ],
+        port: 4,
+        speedOid: "",
         community: "",
         monitor: false,
     });
@@ -61,13 +63,13 @@ export default function Switcher(){
             if (Array.isArray(data)) {
                 const normalizedSwitches = data.map((sw: any) => ({
                     ...sw,
-                    trafikkMengde: typeof sw.trafikkMengde === "string" ? Number(sw.trafikkMengde) : sw.trafikkMengde
+                    trafikkMengde: Array.isArray(sw.trafikkMengde) ? (sw.trafikkMengde.length ? Number(sw.trafikkMengde[sw.trafikkMengde.length - 1].totaltraffic || 0) : 0) : (typeof sw.trafikkMengde === "string" ? Number(sw.trafikkMengde) : sw.trafikkMengde)
                 }));
                 setSwitches(normalizedSwitches);
             } else if (Array.isArray(data.switchers)) {
                 const normalizedSwitches = data.switchers.map((sw: any) => ({
                     ...sw,
-                    trafikkMengde: typeof sw.trafikkMengde === "string" ? Number(sw.trafikkMengde) : sw.trafikkMengde
+                    trafikkMengde: Array.isArray(sw.trafikkMengde) ? (sw.trafikkMengde.length ? Number(sw.trafikkMengde[sw.trafikkMengde.length - 1].totaltraffic || 0) : 0) : (typeof sw.trafikkMengde === "string" ? Number(sw.trafikkMengde) : sw.trafikkMengde)
                 }));
                 setSwitches(normalizedSwitches);
                 if (data.trafficHistory) setTrafficHistory(data.trafficHistory);
@@ -87,7 +89,7 @@ export default function Switcher(){
                 if (Array.isArray(data.switchers)) {
                     const normalizedSwitches = data.switchers.map((sw: any) => ({
                         ...sw,
-                        trafikkMengde: typeof sw.trafikkMengde === "string" ? Number(sw.trafikkMengde) : sw.trafikkMengde
+                        trafikkMengde: Array.isArray(sw.trafikkMengde) ? (sw.trafikkMengde.length ? Number(sw.trafikkMengde[sw.trafikkMengde.length - 1].totaltraffic || 0) : 0) : (typeof sw.trafikkMengde === "string" ? Number(sw.trafikkMengde) : sw.trafikkMengde)
                     }));
                     setSwitches(normalizedSwitches);
                 }
@@ -119,8 +121,10 @@ export default function Switcher(){
                         <input type="text" placeholder="IP Adresse" value={form.ip} onChange={(e) => setForm({ ...form, ip: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
                         <input type="text" placeholder="Lokasjon" value={form.lokasjon} onChange={(e) => setForm({ ...form, lokasjon: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
                         <input type="text" placeholder="Rack" value={form.rack} onChange={(e) => setForm({ ...form, rack: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
-                        <input type="text" placeholder="OID Incoming" value={form.oids[0].oid} onChange={(e) => setForm({ ...form, oids: [{ ...form.oids[0], oid: e.target.value }, form.oids[1]] })} className="p-2 rounded bg-gray-700 text-white flex-1" />
-                        <input type="text" placeholder="OID Outgoing" value={form.oids[1].oid} onChange={(e) => setForm({ ...form, oids: [form.oids[0], { ...form.oids[1], oid: e.target.value }] })} className="p-2 rounded bg-gray-700 text-white flex-1" />
+                        <input type="text" placeholder="OID Incoming (without index)" value={form.oids[0].oid} onChange={(e) => setForm({ ...form, oids: [{ ...form.oids[0], oid: e.target.value }, form.oids[1]] })} className="p-2 rounded bg-gray-700 text-white flex-1" />
+                        <input type="text" placeholder="OID Outgoing (without index)" value={form.oids[1].oid} onChange={(e) => setForm({ ...form, oids: [form.oids[0], { ...form.oids[1], oid: e.target.value }] })} className="p-2 rounded bg-gray-700 text-white flex-1" />
+                        <input type="text" placeholder="Speed OID (base, without index)" value={form.speedOid || ''} onChange={(e) => setForm({ ...form, speedOid: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
+                        <input type="number" placeholder="Port index" value={form.port ?? ''} onChange={(e) => setForm({ ...form, port: Number(e.target.value) })} className="p-2 rounded bg-gray-700 text-white w-40" />
                         <input type="text" placeholder="Community" value={form.community} onChange={(e) => setForm({ ...form, community: e.target.value })} className="p-2 rounded bg-gray-700 text-white flex-1" />
                         
                         <div className="flex items-center">

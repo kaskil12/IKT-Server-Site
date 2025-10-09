@@ -20,8 +20,8 @@ module.exports = class Switcher extends Model {
                 allowNull: false
             },
             trafikkMengde: {
-                type: DataTypes.STRING,
-                allowNull: false
+                type: DataTypes.JSON,
+                allowNull: true
             },
             online: {
                 type: DataTypes.BOOLEAN,
@@ -30,6 +30,14 @@ module.exports = class Switcher extends Model {
             },
             oids: {
                 type: DataTypes.JSON,
+                allowNull: true
+            },
+            port: {
+                type: DataTypes.INTEGER,
+                allowNull: true
+            },
+            speedOid: {
+                type: DataTypes.STRING,
                 allowNull: true
             },
             community: {

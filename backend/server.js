@@ -43,17 +43,20 @@ const Printer = require("./models/Printer.js");
 const SettingString = require("./models/SettingString.js");
 const Users = require("./models/Users.js");
 const Switcher = require('./models/Switcher.js');
+const TrafficHistory = require('./models/TrafficHistory.js');
 Printer.init(sequelizeDB);
 SettingString.init(sequelizeDB);
 Users.init(sequelizeDB);
 Switcher.init(sequelizeDB);
+TrafficHistory.init(sequelizeDB);
 
 
 Promise.all([
   Printer.sync(),
   SettingString.sync(),
   Users.sync(),
-  Switcher.sync()
+  Switcher.sync(),
+  TrafficHistory.sync()
 ]).then(async () => {
   try {
     const userCount = await Users.count();
@@ -76,6 +79,14 @@ Promise.all([
     console.error('Error creating admin user:', error);
   }
 
+
+  try {
+    await sequelizeDB.sync({ alter: true });
+    console.log('Sequelize.sync({ alter: true }) completed - DB schema updated to match models.');
+  } catch (syncErr) {
+    console.error('Error during sequelizeDB.sync({ alter: true }):', syncErr);
+  }
+
   updatePrintersStatus();
   setInterval(fetchtraffic, 1 * 10 * 1000);
   setInterval(updatePrintersStatus, 3 * 60 * 1000);
@@ -92,9 +103,10 @@ function requireAdmin(req, res, next) {
   next();
 }
 app.post('/switcher/add', async (req, res) => {
-  const { modell, ip, lokasjon, rack, trafikkMengde, online, oids, community, monitor } = req.body;
+  const { modell, ip, lokasjon, rack, trafikkMengde, online, oids, community, monitor, port, speedOid } = req.body;
   try {
-    const switcher = await Switcher.create({ modell, ip, lokasjon, rack, trafikkMengde, online, oids, community, monitor });
+    const formattedOids = Array.isArray(oids) ? oids.map((o) => ({ name: o.name, oid: o.oid })) : [];
+    const switcher = await Switcher.create({ modell, ip, lokasjon, rack, trafikkMengde, online, oids: formattedOids, community, monitor, port, speedOid });
     res.status(201).json(switcher);
   } catch (error) {
     console.error('Error adding switcher:', error);
@@ -159,9 +171,11 @@ const fetchtraffic = async () => {
       console.warn(`Switch ${switcher.id} is missing Incoming or Outgoing OID`);
       continue;
     }
-    const incomingOid = incomingOidObj.oid;
-    const outgoingOid = outgoingOidObj.oid;
-    const speedOid = "1.3.6.1.2.1.2.2.1.5.4";
+    const portIndex = switcher.port || 4;
+    const incomingOid = (incomingOidObj.oid || '').endsWith(`.${portIndex}`) ? incomingOidObj.oid : `${incomingOidObj.oid}.${portIndex}`;
+    const outgoingOid = (outgoingOidObj.oid || '').endsWith(`.${portIndex}`) ? outgoingOidObj.oid : `${outgoingOidObj.oid}.${portIndex}`;
+    const speedOidRaw = switcher.speedOid || "1.3.6.1.2.1.2.2.1.5";
+    const speedOid = (String(speedOidRaw).endsWith(`.${portIndex}`)) ? String(speedOidRaw) : `${String(speedOidRaw)}.${portIndex}`;
     const community = switcher.community || "public";
     let session1;
     try {
@@ -197,8 +211,7 @@ const fetchtraffic = async () => {
       });
     });
 
-    // Wait before next SNMP call
-    const interval = 5 * 1000; // 15 seconds
+    const interval = 5 * 1000;
     await new Promise(resolve => setTimeout(resolve, interval));
 
     var incomingTraffic2 = 0;
@@ -234,21 +247,47 @@ const fetchtraffic = async () => {
         var outbps = (deltaOut * 8) / (interval / 1000);
         var inmbps = inbps / 1000000;
         var outmbps = outbps / 1000000;
-        inmbps = Math.floor(inmbps)
-        outmbps = Math.floor(outmbps)
+        inmbps = Math.floor(inmbps);
+        outmbps = Math.floor(outmbps);
         let totalTraffic2 = inmbps + outmbps;
-        totalTraffic2 = Math.floor(totalTraffic2);
         totalTraffic2 = Math.round(totalTraffic2);
-        switcher.trafikkMengde = totalTraffic2;
+
+        const now = new Date();
+        const dateStr = now.toISOString();
+        let trafArray = [];
+        try {
+          trafArray = Array.isArray(switcher.trafikkMengde) ? switcher.trafikkMengde : [];
+        } catch (e) {
+          trafArray = [];
+        }
+        trafArray.push({ date: dateStr, totaltraffic: totalTraffic2 });
+        if (trafArray.length > 2000) trafArray = trafArray.slice(trafArray.length - 2000);
+        switcher.trafikkMengde = trafArray;
         switcher.online = true;
         await switcher.save();
+
         if (!switchTrafficHistory[switcher.id]) switchTrafficHistory[switcher.id] = [];
-        switchTrafficHistory[switcher.id].push({
-          timestamp: Date.now(),
+        const historyEntry = {
+          timestamp: dateStr,
           incoming: inmbps,
           outgoing: outmbps,
           total: totalTraffic2
-        });
+        };
+        switchTrafficHistory[switcher.id].push(historyEntry);
+        try {
+          await TrafficHistory.create({
+            switcherId: switcher.id,
+            date: dateStr,
+            incoming: inmbps,
+            outgoing: outmbps,
+            totaltraffic: totalTraffic2
+          });
+        } catch (e) {
+          console.error('Failed to persist TrafficHistory for switch', switcher.id, e);
+        }
+        if (switchTrafficHistory[switcher.id].length > 2000) {
+          switchTrafficHistory[switcher.id] = switchTrafficHistory[switcher.id].slice(-2000);
+        }
         updatedSwitchers.push(switcher);
         session2.close();
         resolve();
@@ -260,6 +299,38 @@ const fetchtraffic = async () => {
     trafficHistory: switchTrafficHistory
   });
 };
+
+app.get('/switcher/:id/history', async (req, res) => {
+  const { id } = req.params;
+  const { start, end, limit } = req.query;
+  const where = { switcherId: id };
+  if (start) {
+    where.date = where.date || {};
+    where.date[Symbol.for('gte')] = new Date(String(start));
+  }
+  if (end) {
+    where.date = where.date || {};
+    where.date[Symbol.for('lte')] = new Date(String(end));
+  }
+  try {
+    const { Op } = require('sequelize');
+    const whereClause = { switcherId: id };
+    if (start || end) {
+      whereClause.date = {};
+      if (start) whereClause.date[Op.gte] = new Date(String(start));
+      if (end) whereClause.date[Op.lte] = new Date(String(end));
+    }
+    const entries = await TrafficHistory.findAll({
+      where: whereClause,
+      order: [['date', 'ASC']],
+      limit: limit ? Number(limit) : 1000
+    });
+    res.json(entries.map(e => ({ date: e.date, incoming: e.incoming, outgoing: e.outgoing, totaltraffic: e.totaltraffic })));
+  } catch (e) {
+    console.error('Error fetching history for switcher', id, e);
+    res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
 
 app.get('/admin/users', authenticateToken, requireAdmin, async (req, res) => {
   try {
