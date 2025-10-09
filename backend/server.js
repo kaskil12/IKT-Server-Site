@@ -161,7 +161,7 @@ app.post('/switcher/delete/:id', async (req, res) => {
 let switchTrafficHistory = {};
 
 const fetchtraffic = async () => {
-  const switchers = await Switcher.findAll({ where: { monitor: true } });
+  const switchers = await Switcher.findAll();
   let updatedSwitchers = [];
   for (const switcher of switchers) {
     const oids = switcher.oids || [];
@@ -211,7 +211,7 @@ const fetchtraffic = async () => {
       });
     });
 
-    const interval = 5 * 1000;
+    const interval = 10 * 1000;
     await new Promise(resolve => setTimeout(resolve, interval));
 
     var incomingTraffic2 = 0;

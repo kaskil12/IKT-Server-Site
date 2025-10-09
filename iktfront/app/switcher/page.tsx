@@ -21,12 +21,12 @@ export default function Switcher(){
         trafikkMengde: 0,
         online: true,
         oids: [
-            { name: "incoming", oid: "" },
-            { name: "outgoing", oid: "" }
+            { name: "incoming", oid: "1.3.6.1.2.1.2.2.1.10" },
+            { name: "outgoing", oid: "1.3.6.1.2.1.2.2.1.16" }
         ],
         port: 4,
-        speedOid: "",
-        community: "",
+        speedOid: "1.3.6.1.2.1.2.2.1.5",
+        community: "rsec010817",
         monitor: false,
     });
     const [switches, setSwitches] = useState<ChartSwitcher[]>([]);
@@ -87,14 +87,31 @@ export default function Switcher(){
             socketInstance = ioClient(`http://${ip}`, { transports: ["websocket", "polling"] });
             socketInstance.on("switchersTrafficUpdate", (data: { switchers: any[]; trafficHistory: Record<string, any[]> }) => {
                 if (Array.isArray(data.switchers)) {
-                    const normalizedSwitches = data.switchers.map((sw: any) => ({
+                    // Normalize incoming switches the same way we do on fetch
+                    const incoming = data.switchers.map((sw: any) => ({
                         ...sw,
                         trafikkMengde: Array.isArray(sw.trafikkMengde) ? (sw.trafikkMengde.length ? Number(sw.trafikkMengde[sw.trafikkMengde.length - 1].totaltraffic || 0) : 0) : (typeof sw.trafikkMengde === "string" ? Number(sw.trafikkMengde) : sw.trafikkMengde)
                     }));
-                    setSwitches(normalizedSwitches);
+
+                    // Merge: update existing switches with incoming data, and append any new switches
+                    setSwitches(prev => {
+                        const prevMap = new Map(prev.map(p => [p.id, p]));
+                        incoming.forEach((inc: any) => prevMap.set(inc.id, { ...(prevMap.get(inc.id) || {}), ...inc }));
+                        const updated: any[] = [];
+                        const seen = new Set<number>();
+                        prev.forEach(p => {
+                            const merged = prevMap.get(p.id) || p;
+                            updated.push(merged);
+                            seen.add(p.id);
+                        });
+                        incoming.forEach(inc => {
+                            if (!seen.has(inc.id)) updated.push(inc);
+                        });
+                        return updated;
+                    });
                 }
                 if (data.trafficHistory && typeof data.trafficHistory === "object") {
-                    setTrafficHistory(data.trafficHistory);
+                    setTrafficHistory(prev => ({ ...(prev || {}), ...(data.trafficHistory || {}) }));
                 }
             });
         }

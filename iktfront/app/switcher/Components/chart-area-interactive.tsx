@@ -174,6 +174,9 @@ export function ChartAreaInteractive({ switches = [], trafficHistory = {} }: Cha
     } else if (timeRange === "7d") {
       daysToSubtract = 7;
     }
+    else if (timeRange === "1d") {
+      daysToSubtract = 1;
+    }
     const startDate = new Date(referenceDate);
     startDate.setDate(startDate.getDate() - daysToSubtract);
     return date >= startDate;
@@ -204,6 +207,9 @@ export function ChartAreaInteractive({ switches = [], trafficHistory = {} }: Cha
             </SelectItem>
             <SelectItem value="7d" className="rounded-lg">
               Siste 7 dager
+            </SelectItem>
+            <SelectItem value="1d" className="rounded-lg">
+              Siste dag
             </SelectItem>
           </SelectContent>
         </Select>
@@ -250,7 +256,7 @@ export function ChartAreaInteractive({ switches = [], trafficHistory = {} }: Cha
               const colors = ["#34d399", "#60a5fa", "#f59e0b", "#ef4444", "#a78bfa", "#06b6d4"];
               const ks = Array.from(keys);
               return ks.map((k, idx) => (
-                <Area key={k} dataKey={k} type="monotone" stroke={colors[idx % colors.length]} fillOpacity={0.15} />
+                <Area key={k} dataKey={k} name={k} type="monotone" stroke={colors[idx % colors.length]} fillOpacity={0.15} />
               ));
             })()}
             <ChartLegend content={<ChartLegendContent />} />
