@@ -241,8 +241,12 @@ const fetchtraffic = async () => {
         incomingTraffic2 = Number(varbinds[0]?.value) || 0;
         outgoingTraffic2 = Number(varbinds[1]?.value) || 0;
         speedTraffic2 = Number(varbinds[2]?.value) || 0;
-        var deltaIn = incomingTraffic2 - incomingTraffic;
-        var deltaOut = outgoingTraffic2 - outgoingTraffic;
+        function calculateDelta(current, previous, maxCounter = 4294967296) {
+          return current >= previous ? (current - previous) : (maxCounter - previous + current);
+        }
+
+        const deltaIn = calculateDelta(incomingTraffic2, incomingTraffic);
+        const deltaOut = calculateDelta(outgoingTraffic2, outgoingTraffic);
         var inbps = (deltaIn * 8) / (interval / 1000);
         var outbps = (deltaOut * 8) / (interval / 1000);
         var inmbps = inbps / 1000000;
