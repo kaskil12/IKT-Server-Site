@@ -41,7 +41,7 @@ const Navbar04Page = () => {
                   className="hidden sm:inline-flex rounded-full cursor-pointer"
                   onClick={handleAuthAction}
                 >
-                  {isAuthenticated ? 'Log ut' : 'Log in'}
+                  {isAuthenticated ? 'Logg ut' : 'Log in'}
                 </Button>
               </>
             )}

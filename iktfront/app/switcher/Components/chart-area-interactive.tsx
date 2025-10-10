@@ -168,17 +168,22 @@ export function ChartAreaInteractive({ switches = [], trafficHistory = {} }: Cha
   const filteredData = chartData.filter((item: any) => {
     const date = new Date(item.date);
     const referenceDate = new Date();
-    let daysToSubtract = 90;
+
+    const MS_PER_HOUR = 60 * 60 * 1000;
+    const MS_PER_DAY = 24 * MS_PER_HOUR;
+
+    let msToSubtract = 90 * MS_PER_DAY;
     if (timeRange === "30d") {
-      daysToSubtract = 30;
+      msToSubtract = 30 * MS_PER_DAY;
     } else if (timeRange === "7d") {
-      daysToSubtract = 7;
+      msToSubtract = 7 * MS_PER_DAY;
+    } else if (timeRange === "1d") {
+      msToSubtract = 1 * MS_PER_DAY;
+    } else if (timeRange === "1t") {
+      msToSubtract = 1 * MS_PER_HOUR; 
     }
-    else if (timeRange === "1d") {
-      daysToSubtract = 1;
-    }
-    const startDate = new Date(referenceDate);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
+
+    const startDate = new Date(referenceDate.getTime() - msToSubtract);
     return date >= startDate;
   });
 
@@ -210,6 +215,9 @@ export function ChartAreaInteractive({ switches = [], trafficHistory = {} }: Cha
             </SelectItem>
             <SelectItem value="1d" className="rounded-lg">
               Siste dag
+            </SelectItem>
+            <SelectItem value="1t" className="rounded-lg">
+              Siste time
             </SelectItem>
           </SelectContent>
         </Select>
